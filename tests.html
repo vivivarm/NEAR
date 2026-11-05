@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NE-AR Test Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05070A;--panel:#10141B;--panel-2:#181D26;--line:#262D39;--ink:#fff;--ink-2:#BAC2CE;--ink-3:#818B9A;--accent:#FC3D21;--blue:#0B3D91;--sky:#6FA3FF;--good:#5BC98E;--bad:#FF6B5B;--warn:#E8B04B}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Inter","Helvetica Neue",Arial,sans-serif;border-top:3px solid var(--accent)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 60px}
+a{color:var(--sky)}
+.eyebrow{font:500 12px "DM Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);display:flex;align-items:center;gap:9px}
+.eyebrow::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--accent)}
+h1{font-weight:800;letter-spacing:-.04em;font-size:clamp(30px,5vw,48px);margin:10px 0 6px}
+p.lead{color:var(--ink-2);max-width:70ch;margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:22px 0}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:4px;padding:12px 20px;font:700 13px "Inter",sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:wait}
+.sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:22px}
+.sum div{background:var(--panel);padding:16px}
+.sum b{display:block;font:800 30px "Inter",sans-serif;letter-spacing:-.03em}
+.sum span{font:500 11px "DM Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.group{border:1px solid var(--line);border-radius:6px;margin-bottom:16px;overflow:hidden;background:var(--panel)}
+.group h2{margin:0;padding:12px 16px;background:var(--panel-2);font:600 13px "DM Mono",monospace;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
+.group h2 small{color:var(--ink-3);font-weight:400;letter-spacing:0;text-transform:none}
+.t{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1.1fr);gap:12px;padding:10px 16px;border-top:1px solid var(--line);align-items:start}
+.t .ic{font:700 14px "DM Mono",monospace}
+.t.pass .ic{color:var(--good)} .t.fail .ic{color:var(--bad)} .t.run .ic{color:var(--warn)} .t.skip .ic{color:var(--ink-3)}
+.t .nm{font-size:14px}
+.t .dt{font:12.5px "DM Mono",monospace;color:var(--ink-2);word-break:break-word}
+.t.fail .dt{color:#FFB3A8}
+.note{color:var(--ink-3);font-size:13px;margin-top:26px}
+iframe#app{position:absolute;left:-10000px;top:0;width:1280px;height:900px;border:0}
+@media (max-width:640px){.sum{grid-template-columns:repeat(2,minmax(0,1fr))}.t{grid-template-columns:24px minmax(0,1fr)}.t .dt{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">NE-AR Trend Detective · Quality checks</div>
+  <h1>Test suite</h1>
+  <p class="lead">These tests run in your browser against the real code of the <a href="./">published site</a>. Unit tests check the statistics against reference values computed with SciPy. Data tests check every NASA series. Integration tests drive the site like a user. Network tests call the live NASA services.</p>
+  <div class="bar"><button class="btn" id="run">Run all tests</button><button class="btn ghost" id="runNet">Run network tests</button><span id="state" class="eyebrow" style="letter-spacing:.06em"></span></div>
+  <div class="sum"><div><b id="nTotal">0</b><span>Tests</span></div><div><b id="nPass" style="color:var(--good)">0</b><span>Passed</span></div><div><b id="nFail" style="color:var(--bad)">0</b><span>Failed</span></div><div><b id="nTime">0 s</b><span>Time</span></div></div>
+  <div id="out"></div>
+  <p class="note">Reference values for the statistics come from SciPy 1.18 (scipy.stats, scipy.special). The site computes the normal distribution with the Abramowitz &amp; Stegun approximation (error below 1.5 × 10⁻⁷), so p-values are compared within that precision. Network tests need an internet connection and can fail if a NASA service is busy; they do not affect the site. Code: <a href="https://github.com/vivivarm/NEAR">github.com/vivivarm/NEAR</a>.</p>
+</div>
+<iframe id="app" title="Site under test" aria-hidden="true" tabindex="-1"></iframe>
+<script>
+const $=s=>document.querySelector(s), sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const TESTS=[]; const test=(group,name,fn,opt={})=>TESTS.push({group,name,fn,net:!!opt.net});
+class Fail extends Error{}
+const ok=(cond,msg)=>{ if(!cond) throw new Fail(msg||'condition is false'); };
+const close=(got,exp,tol,label='')=>{ if(!(Math.abs(got-exp)<=tol)) throw new Fail(`${label} expected ${exp} ± ${tol}, got ${got}`); return `${label}${label?' ':''}${+(+got).toPrecision(8)} ≈ ${exp}`; };
+let M=null, W=null;
+
+/* ---------- load the real code ---------- */
+async function loadMaths(){ const src=await (await fetch('./index.html?t='+Date.now(),{cache:'no-store'})).text();
+  const a=src.indexOf('/* ---------- maths ---------- */'), b=src.indexOf('const SCAN=',a); if(a<0||b<0) throw new Error('could not find the statistics code in index.html');
+  const seas=src.match(/const SEASONS=(\{[\s\S]*?\});\n/); const SEASONS=Function('return '+seas[1])();
+  M=new Function('Y0','Y1','SEASONS',src.slice(a,b)+';return {climatology,anomalies,seasonal,erf,phi,lgamma,ibeta,tTwo,tCrit,mannKendall,ols};')(1981,2025,SEASONS); }
+async function loadApp(){ const f=$('#app'); await new Promise(r=>{ f.onload=r; f.src='./index.html?test='+Date.now()+'#home'; }); W=f.contentWindow; await sleep(1500); }
+const ev=s=>W.eval(s);
+const visibleH2=()=>[...W.document.querySelectorAll('.step')].filter(e=>!e.hidden).map(e=>(e.querySelector('h2')||{}).textContent||'').join(' ');
+
+/* ---------- unit: statistics ---------- */
+const U='Unit tests · statistics';
+test(U,'erf(1) matches the error function',()=>close(M.erf(1),0.8427007929,2e-7,'erf(1)'));
+test(U,'erf is odd: erf(−0.5)',()=>close(M.erf(-0.5),-0.5204998778,2e-7,'erf(-0.5)'));
+test(U,'Normal CDF Φ(1.96) = 0.975',()=>close(M.phi(1.96),0.9750021049,1e-6,'Φ(1.96)'));
+test(U,'log-gamma ln Γ(5.5)',()=>close(M.lgamma(5.5),3.9578139676,1e-8,'lnΓ(5.5)'));
+test(U,'Regularized incomplete beta I(0.4; 2, 3)',()=>close(M.ibeta(0.4,2,3),0.5248,1e-8,'I'));
+test(U,'Two-sided t p-value, t = 2.5, df = 20',()=>close(M.tTwo(2.5,20),0.0212335454,1e-7,'p'));
+for(const [df,exp] of [[10,2.2281388520],[30,2.0422724563],[43,2.0166921992]]) test(U,`95% t critical value, df = ${df}`,()=>close(M.tCrit(df),exp,1e-6,'t*'));
+const P=(xs,ys)=>xs.map((x,i)=>({year:x,value:ys[i]}));
+test(U,'Mann-Kendall: strictly rising series (n = 10)',()=>{ const r=M.mannKendall(P([1,2,3,4,5,6,7,8,9,10],[1,2,3,4,5,6,7,8,9,10])); ok(r.S===45,`S should be 45, got ${r.S}`); close(r.Z,3.9354796404,1e-8,'Z'); close(r.p,8.30307e-5,1e-7,'p'); return `S=45 · ${close(r.slope,1,1e-12,'Sen slope')} · p=${r.p.toExponential(3)}`; });
+test(U,'Mann-Kendall: strictly falling series is the mirror image',()=>{ const r=M.mannKendall(P([0,1,2,3,4,5,6,7,8,9],[10,9,8,7,6,5,4,3,2,1])); ok(r.S===-45,`S should be −45, got ${r.S}`); close(r.Z,-3.9354796404,1e-8,'Z'); return close(r.slope,-1,1e-12,'Sen slope'); });
+test(U,'Mann-Kendall with ties uses the tie correction',()=>{ const r=M.mannKendall(P([0,1,2,3,4,5,6],[1,2,2,3,5,4,6])); ok(r.S===18,`S should be 18, got ${r.S}`); close(r.Z,2.5824853861,1e-8,'Z'); close(r.p,0.0098091516,1e-7,'p'); return close(r.slope,0.8,1e-12,'Sen slope'); });
+test(U,'Mann-Kendall on a noisy yearly series',()=>{ const ys=[3.1,2.9,3.4,3.3,3.8,3.6,4.1,3.9,4.4,4.2,4.6,4.9]; const r=M.mannKendall(P([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011],ys)); ok(r.S===56,`S should be 56, got ${r.S}`); close(r.p,0.0001622756,1e-7,'p'); return close(r.slope,0.1625,1e-12,'Sen slope'); });
+test(U,'Mann-Kendall: flat series gives no trend',()=>{ const r=M.mannKendall(P([1,2,3,4,5],[2,2,2,2,2])); ok(r.S===0&&r.Z===0,`S=${r.S}, Z=${r.Z}`); return `S=0 · Z=0 · p=${r.p}`; });
+test(U,'Linear regression (OLS): slope, intercept, standard error, p',()=>{ const r=M.ols(P([1,2,3,4,5],[2,4,5,4,5])); close(r.slope,0.6,1e-12,'slope'); close(r.intercept,2.2,1e-12,'intercept'); close(r.se,0.2828427125,1e-9,'se'); return close(r.p,0.1240270627,1e-7,'p'); });
+test(U,'Linear regression on a yearly series',()=>{ const ys=[3.1,2.9,3.4,3.3,3.8,3.6,4.1,3.9,4.4,4.2,4.6,4.9]; const r=M.ols(P([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011],ys)); close(r.slope,0.1643356643,1e-9,'slope'); close(r.se,0.0151475699,1e-9,'se'); return close(r.p,7.495776e-7,1e-11,'p'); });
+test(U,'95% confidence interval contains the slope and uses t*',()=>{ const r=M.ols(P([1,2,3,4,5],[2,4,5,4,5])); ok(r.lo<r.slope&&r.slope<r.hi,'slope outside CI'); return close((r.hi-r.slope)/r.se,3.1824463053,1e-5,'t*(df=3)'); });
+const mk=f=>{ const a=[]; for(let y=1981;y<=2025;y++) for(let m=0;m<12;m++) a.push(f(y,m)); return a; };
+test(U,'Seasonal means: winter (DJF) uses the previous December',()=>{ const arr=mk((y,m)=>y*100+m); const w=M.seasonal(arr,'djf',1982,1982)[0]; return close(w.value,(198111+198200+198201)/3,1e-9,'DJF 1982'); });
+test(U,'Seasonal means: first winter is skipped (no December 1980)',()=>{ const arr=mk((y,m)=>1); const w=M.seasonal(arr,'djf',1981,1983); ok(w.length===2&&w[0].year===1982,`got years ${w.map(p=>p.year)}`); return 'years 1982, 1983'; });
+test(U,'Whole-year means average all 12 months',()=>{ const arr=mk((y,m)=>m); return close(M.seasonal(arr,'all',2000,2000)[0].value,5.5,1e-12,'mean'); });
+test(U,'Climatology 1981–2010: mean and standard deviation per month',()=>{ const arr=mk((y,m)=>m*10+(y%2)); const c=M.climatology(arr); close(c.mean[3],30.5,1e-12,'April mean'); return close(c.sd[3],0.5085476277,1e-9,'April SD'); });
+test(U,'Anomalies are zero on average over 1981–2010',()=>{ const arr=mk((y,m)=>Math.sin(m)+0.01*(y-1981)); const an=M.anomalies(arr).slice(0,360); return close(an.reduce((a,b)=>a+b,0)/360,0,1e-12,'mean anomaly'); });
+
+/* ---------- data integrity ---------- */
+const D='Data tests · NASA series and projections';
+test(D,'15 study regions are defined, each with coordinates',()=>{ const n=ev("Object.keys(REG).filter(k=>k!=='custom'&&REG[k].ll).length"); ok(n===15,`found ${n}`); return '15 regions'; });
+test(D,'Every NASA series has 540 months (1981–2025) with no gaps',()=>{ const r=ev("Object.keys(SER).filter(k=>!k.endsWith('_custom')).map(k=>[k,SER[k].length,SER[k].every(Number.isFinite)])"); const bad=r.filter(([k,n,f])=>n!==540||!f); ok(!bad.length,`bad: ${bad.map(b=>b[0]).join(', ')}`); return `${r.length} series × 540 months`; });
+test(D,'Every series has a trend test with a valid p-value',()=>{ const r=ev("Object.keys(SCAN).filter(k=>!k.endsWith('_custom')).map(k=>SCAN[k].p)"); ok(r.length>=49,`only ${r.length}`); ok(r.every(p=>p>0&&p<=1),'p outside (0, 1]'); return `${r.length} tests, all 0 < p ≤ 1`; });
+test(D,'Physical ranges: temperature, rain, humidity, snow',()=>{ const r=ev("Object.keys(SER).filter(k=>!k.endsWith('_custom')).map(k=>[k,META[k].p,Math.min(...SER[k]),Math.max(...SER[k])])"); const lim={T2M:[-40,50],T2M_MIN:[-50,45],T2M_MAX:[-35,55],PRECTOTCORR:[0,80],RH2M:[0,100],SNODP:[0,1000]}; const bad=r.filter(([k,p,lo,hi])=>lim[p]&&(lo<lim[p][0]||hi>lim[p][1])); ok(!bad.length,`out of range: ${bad.map(b=>b[0]).join(', ')}`); return `${r.length} series inside physical limits`; });
+for(const [k,dec,p,label] of [['SNODP_himalaya',0.97,1e-4,'Western Himalaya snow depth'],['T2M_thar',-0.04,0.551,'Thar Desert air temperature'],['PRECTOTCORR_amazon',-0.44,0.0002,'Central Amazon rainfall']])
+  test(D,`Published result unchanged: ${label}`,()=>{ const r=ev(`SCAN['${k}']`); close(r.slope*10,dec,0.006,'per decade'); return p<1e-3?(ok(r.p<(p<=1e-4?1e-4:p*1.5),`p=${r.p}`),`${(r.slope*10).toFixed(2)}/decade · p=${r.p.toPrecision(2)}`):close(r.p,p,0.002,'p'); });
+test(D,'CMIP6 projections exist for all 15 regions',()=>{ const n=ev("Object.keys(CMIP).length"); ok(n===15,`found ${n}`); return '15 regions · temperature and rainfall · 2 scenarios'; });
+test(D,'CMIP6: years ascending and model range brackets the mean',()=>{ const bad=ev("Object.entries(CMIP).flatMap(([r,R])=>['tas','pr'].flatMap(v=>['ssp245','ssp585'].filter(sc=>{const D=R[v][sc]; return !D.y.every((y,i)=>!i||y>D.y[i-1]) || !D.m.every((m,i)=>D.lo[i]<=m+1e-9&&m<=D.hi[i]+1e-9);}).map(sc=>r+' '+v+' '+sc)))"); ok(!bad.length,bad.join(', ')); return 'all 60 series consistent'; });
+test(D,'CMIP6: higher emissions are warmer than lower emissions by 2100 everywhere',()=>{ const r=ev("Object.entries(CMIP).map(([k,R])=>[k,R.tas.ssp585.m.at(-1),R.tas.ssp245.m.at(-1)])"); const bad=r.filter(([k,h,l])=>!(h>l)); ok(!bad.length,bad.map(b=>b[0]).join(', ')); return r.map(([k,h,l])=>`${k} +${l}/+${h}`).slice(0,3).join(' · ')+' …'; });
+
+/* ---------- integration ---------- */
+const I='Integration tests · the site used like a visitor';
+const scanRows=()=>W.document.querySelectorAll('#scanner .trow:not(.th):not(.grp)').length;
+test(I,'Home: Trend scanner shows the 3 featured places by default',async()=>{ ev("location.hash='#home'; SC.set='featured';SC.place='';SC.clue='all';SC.sig=false;renderScan()"); await sleep(300); const n=scanRows(); ok(n===13,`rows: ${n}`); return '13 clues for Himalaya, Thar, Sundarbans'; });
+test(I,'Scanner filters: All places, Rain, Only significant',async()=>{ ev("SC.set='all';renderScan()"); const a=scanRows(); ev("SC.clue='rain';renderScan()"); const b=scanRows(); ev("SC.sig=true;renderScan()"); const c=scanRows(); ev("SC.set='featured';SC.clue='all';SC.sig=false;renderScan()"); ok(a===49&&b===11&&c===7,`${a}/${b}/${c}`); return 'all 49 → rain 11 → significant 7'; });
+test(I,'Scanner: one place from the list',async()=>{ ev("SC.place='andes';renderScan()"); const n=scanRows(); ev("SC.place='';renderScan()"); ok(n===3,`rows: ${n}`); return 'Colombian Andes: 3 clues'; });
+test(I,'Open case button goes to Step 3 with the right place',async()=>{ ev("openCase('amazon','PRECTOTCORR_amazon')"); await sleep(700); ok(W.location.hash==='#detective','hash '+W.location.hash); const h=visibleH2(); ok(/Central Amazon/.test(h),h); return h; });
+test(I,'Step 4: running the test gives a verdict',async()=>{ ev("S.max=Math.max(S.max,4);go(4)"); await sleep(500); const b=W.document.querySelector('[data-step="4"] #runTest, [data-step="4"] [data-run], #runTest'); if(b){ b.click(); await sleep(700); } const t=W.document.querySelector('[data-step="4"]').innerText; ok(/significant|chance/i.test(t),'no verdict text'); return 'verdict shown'; });
+test(I,'Time machine 2100 shows NASA CMIP6 projections',async()=>{ ev("S.max=6;go(6)"); await sleep(700); const r=W.document.querySelector('#tmYear'); r.value=2100; r.dispatchEvent(new W.Event('input')); await sleep(200); const t=W.document.querySelector('#tmText').innerText; ok(/NEX-GDDP-CMIP6/.test(t)&&/mm\/day/.test(t),t.slice(0,80)); return t.slice(0,110)+'…'; });
+test(I,'Time machine for snow explains the temperature change instead',async()=>{ ev("openCase('himalaya','SNODP_himalaya')"); await sleep(500); ev("S.max=6;go(6)"); await sleep(600); const r=W.document.querySelector('#tmYear'); r.value=2080; r.dispatchEvent(new W.Event('input')); await sleep(200); const t=W.document.querySelector('#tmText').innerText; ok(/\+2\.6 °C/.test(t)&&/\+5\.5 °C/.test(t),t.slice(0,90)); return '+2.6 °C / +5.5 °C by 2100'; });
+test(I,'Course: passing the quiz shows the certificate with the name',async()=>{ ev("location.hash='#learn'"); await sleep(600); const ans=[1,1,0,1,1]; ans.forEach((a,i)=>{ W.document.querySelector(`input[name=q${i}][value="${a}"]`).checked=true; }); W.document.querySelector('#quizCheck').click(); await sleep(200); ok(!W.document.querySelector('#certBox').hidden,'certificate hidden'); const n=W.document.querySelector('#certName'); n.value='Test Detective'; n.dispatchEvent(new W.Event('input')); const shown=W.document.querySelector('#cert .name').textContent; ok(shown==='Test Detective',shown); return 'score 5/5 · name on certificate'; });
+test(I,'Every page opens: Home, Detective, E-book, AR, Courses, About, FAQs, Contact',async()=>{ const out=[]; for(const h of ['home','detective','ebook','ar','learn','about','faq','contact']){ ev(`location.hash='#${h}'`); await sleep(350); const m=W.document.querySelector(`main[data-page="${h}"]`); ok(m&&!m.hidden&&m.innerText.length>100,`${h} empty`); out.push(h); } ev("location.hash='#home'"); return out.length+' pages'; });
+
+/* ---------- network ---------- */
+const N='Network tests · live NASA services';
+test(N,'NASA POWER answers for a point anywhere (Medellín)',async()=>{ const r=await ev("loadLive(-75.57,6.25,['Medellín','Colombia'],null)"); ok(r.keys.length>=5,`only ${r.keys.length} variables`); return `${r.keys.length} live variables · 540 months each`; },{net:true});
+test(N,'NASA NCCS THREDDS lists the NEX-GDDP-CMIP6 catalog',async()=>{ const res=await fetch('https://ds.nccs.nasa.gov/thredds/catalog/AMES/NEX/GDDP-CMIP6/catalog.xml').catch(e=>({ok:false,status:e.message})); if(!res.ok) throw new Fail('not reachable from this browser ('+res.status+'); data was downloaded on 5 Nov 2026'); return 'catalog reachable'; },{net:true});
+
+/* ---------- runner ---------- */
+function render(){ const groups=[...new Set(TESTS.map(t=>t.group))]; $('#out').innerHTML=groups.map(g=>{ const ts=TESTS.filter(t=>t.group===g); const p=ts.filter(t=>t.st==='pass').length; return `<section class="group"><h2>${g}<small>${p}/${ts.length} passed</small></h2>${ts.map(t=>`<div class="t ${t.st||'skip'}"><span class="ic">${{pass:'✓',fail:'✕',run:'…'}[t.st]||'–'}</span><span class="nm">${t.name}</span><span class="dt">${(t.msg||(t.st?'':t.net?'press “Run network tests”':'not run yet')).replace(/</g,'&lt;')}</span></div>`).join('')}</section>`; }).join('');
+  const run=TESTS.filter(t=>t.st&&t.st!=='run'); $('#nTotal').textContent=TESTS.length; $('#nPass').textContent=run.filter(t=>t.st==='pass').length; $('#nFail').textContent=run.filter(t=>t.st==='fail').length; }
+async function runAll(withNet){ $('#run').disabled=$('#runNet').disabled=true; const t0=performance.now(); TESTS.forEach(t=>{ if(!t.net||withNet){ t.st=null; t.msg=''; } }); render();
+  try{ $('#state').textContent='Loading the site code…'; await loadMaths(); await loadApp(); }catch(e){ $('#state').textContent='Could not load the site: '+e.message; $('#run').disabled=$('#runNet').disabled=false; return; }
+  for(const t of TESTS){ if(t.net&&!withNet) continue; t.st='run'; render(); $('#state').textContent=t.name; try{ const r=await t.fn(); t.st='pass'; t.msg=typeof r==='string'?r:'ok'; }catch(e){ t.st='fail'; t.msg=e.message||String(e); } render(); }
+  $('#nTime').textContent=((performance.now()-t0)/1000).toFixed(1)+' s'; const f=TESTS.filter(t=>t.st==='fail').length; $('#state').textContent=f?`${f} test${f>1?'s':''} failed`:'All tests passed'; $('#state').style.color=f?'var(--bad)':'var(--good)'; $('#run').disabled=$('#runNet').disabled=false; window.__RESULTS=TESTS.map(t=>({group:t.group,name:t.name,st:t.st,msg:t.msg})); }
+$('#run').addEventListener('click',()=>runAll(false)); $('#runNet').addEventListener('click',()=>runAll(true));
+render(); runAll(false);
+</script>
+</body>
+</html>

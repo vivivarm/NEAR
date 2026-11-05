@@ -46,3 +46,5 @@ Editar `td/site` (archivo de trabajo), reconstruir `index.html`, conservar el bl
 - [ ] Enlaces 2026: e-book, visor AR, APK Android (hoy apuntan a los de 2025)
 - [ ] Formulario de contacto: definir correo del equipo (Formspree gratis) o botón "Escríbenos"
 - [ ] Si queda tiempo: chat más interactivo (que el bot pueda abrir casos o lugares del sitio)
+
+- [x] Página de pruebas `tests.html`: 41 pruebas (unitarias de estadística vs SciPy, de datos, de integración) + 2 de red
