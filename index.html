@@ -3,31 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NE-AR Trend Detective</title>
+<title>NE-AR Trend Detective · NASA Space Apps 2026</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 /* Layout: a night-ocean "mission desk" site. Sticky nav, hash-routed pages; the Trend Detective page is a six-step guided case. Single dark theme by design. */
 :root{
   color-scheme:dark;
-  --bg:#06101A; --bg-2:#0A1722; --panel:#0E1D2A; --panel-2:#142838; --line:#1E3446; --grid:#152A3B;
-  --ink:#E8F0F6; --ink-2:#A6B8C7; --ink-3:#6E8598;
-  --accent:#5CD0C4; --accent-ink:#03201D; --amber:#F2B45A; --focus:#F2C14E;
-  --heat:#F08A62; --rain:#62B2EA; --snow:#A9B2F7; --hum:#7FD8CB; --soil:#D2AA6E;
+  --bg:#05070A; --bg-2:#0A0D12; --panel:#10141B; --panel-2:#181D26; --line:#262D39; --grid:#0D1118;
+  --ink:#FFFFFF; --ink-2:#BAC2CE; --ink-3:#818B9A;
+  --accent:#FC3D21; --accent-ink:#FFFFFF; --amber:#FFB81C; --focus:#FFB81C;
+  --blue:#0B3D91; --blue-2:#1450B8; --sky:#6FA3FF;
+  --heat:#F5875F; --rain:#5AAEF0; --snow:#AEB7FA; --hum:#7FD8CB; --soil:#D2AA6E;
   --heat-neg:#5A92D5; --heat-pos:#EE6B4D; --rain-neg:#C98B4E; --rain-pos:#38BDB4; --snow-neg:#E0A04A; --snow-pos:#7C95F0;
-  --div-mid:#1C2E3C; --good:#5BC98E; --warn:#E8B04B;
-  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
-  --r:16px;
+  --div-mid:#1A202A; --good:#5BC98E; --warn:#E8B04B;
+  --f-display:"Inter","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  --f-body:"Inter","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  --f-mono:"DM Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r:6px;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font:400 15.5px/1.6 var(--f-body);-webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(1200px 520px at 78% -8%,rgba(92,208,196,.10),transparent 60%),radial-gradient(900px 480px at -10% 30%,rgba(242,180,90,.06),transparent 60%),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-image:radial-gradient(1100px 560px at 82% -12%,rgba(20,80,184,.28),transparent 62%),radial-gradient(800px 420px at -12% 40%,rgba(11,61,145,.14),transparent 60%),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:auto,auto,48px 48px,48px 48px;background-attachment:fixed}
 .wrap{max-width:1180px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 h1,h2,h3,h4{font-family:var(--f-display);font-weight:700;letter-spacing:-.02em;text-wrap:balance;margin:0;line-height:1.1}
@@ -286,6 +287,63 @@ footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .page-l{padding:26px 22px}
 }
+
+body{margin:0}
+/* ---- NASA-style identity layer: black + white, NASA blue surfaces, NASA red for action. Inter + DM Mono. Square corners. ---- */
+h1,h2,h3,h4{font-weight:800;letter-spacing:-.035em}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--ink-2);letter-spacing:.14em}
+.eyebrow::before{content:"";flex:none;width:9px;height:9px;background:var(--accent);border-radius:50%}
+.nav{background:rgba(5,7,10,.92);border-top:3px solid var(--accent)}
+.brand{font-weight:800;letter-spacing:-.02em}
+.links a{border-radius:0;padding:8px 12px;position:relative}
+.links a[aria-current="page"]{background:none;color:var(--ink)}
+.links a[aria-current="page"]::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;background:var(--accent)}
+.btn{border-radius:4px;text-transform:uppercase;letter-spacing:.06em;font-size:13.5px;font-weight:700;padding:13px 22px}
+.btn.sm{font-size:12px;padding:9px 14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:none}
+.btn.primary:hover{background:#E0311A;border-color:#E0311A;box-shadow:0 10px 28px -10px rgba(252,61,33,.7)}
+.btn:not(.primary):hover{border-color:var(--ink)}
+.chip,.badge{border-radius:3px}
+.panel{border-radius:var(--r);background:var(--panel)}
+.hero h1{letter-spacing:-.045em;font-weight:800}
+.hero h1 span{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--accent)}
+.facts{border-radius:var(--r);background:var(--line)}
+.fact{background:var(--blue)}
+.fact b{font-weight:800;letter-spacing:-.03em}
+.fact span{color:#D6E2FF}
+.case-card::after{opacity:.16}
+.how li{border-radius:var(--r);border-top:3px solid var(--blue-2)}
+.how li i{color:var(--accent)}
+.rail{background:rgba(5,7,10,.92)}
+.rail button{border-radius:4px}
+.rail button.on{color:var(--ink)} .rail button.on .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.rail .bar i{background:var(--accent)}
+.choice{border-radius:8px}
+.loc-list .choice{border-radius:8px}
+.choice .ico{border-radius:6px}
+.seg{border-radius:4px} .seg button{border-radius:3px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#05070A}
+.tabs button{border-radius:4px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:#05070A}
+.clue-card,.stat,.insight,.future,.verdict,.casefile,.quiz label{border-radius:6px}
+.lesson summary::after,.faq summary::after{color:var(--accent)}
+.spread{border-radius:8px}
+.page-l .kq{border-left-color:var(--accent);background:rgba(252,61,33,.06)}
+.page-l .eyebrow{color:#8A2A1A}
+.cert{border-radius:8px;border-color:var(--accent);background:radial-gradient(circle at 50% 0%,rgba(20,80,184,.45),transparent 65%),#081631}
+.cert::before{border-color:rgba(255,255,255,.25);border-radius:4px}
+.cert .name{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff}
+.avatar{background:var(--blue);color:#fff;border:2px solid var(--blue-2)}
+input[type=range]{accent-color:var(--accent)}
+.quiz input{accent-color:var(--accent)}
+footer{background:var(--blue);border-top:3px solid var(--accent);color:#D6E2FF}
+footer a{color:#fff}
+.demo-bar{background:var(--blue);border-top:3px solid var(--accent)}
+.demo-bar .btn.primary{background:#fff;border-color:#fff;color:var(--blue)}
+.toast{border-radius:4px}
+.tip{border-radius:4px}
+a{color:var(--sky)}
+@media (max-width:960px){.links{background:#05070A}.links a[aria-current="page"]::after{left:0;right:auto;top:8px;bottom:8px;width:3px;height:auto}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
 
@@ -294,7 +352,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
 <nav class="nav" aria-label="Main">
   <div class="wrap">
     <a class="brand" href="#home" aria-label="NE-AR home">
-      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="9" stroke="#5CD0C4" stroke-width="2"/><ellipse cx="16" cy="16" rx="15" ry="5.5" stroke="#F2B45A" stroke-width="1.5" transform="rotate(-24 16 16)"/><circle cx="25.5" cy="10" r="2.2" fill="#F2B45A"/></svg>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="9" stroke="#6FA3FF" stroke-width="2"/><ellipse cx="16" cy="16" rx="15" ry="5.5" stroke="#FFFFFF" stroke-width="1.5" transform="rotate(-24 16 16)"/><circle cx="25.5" cy="10" r="2.2" fill="#FC3D21"/></svg>
       <span>NE-AR<small>Trend Detective</small></span></a>
     <button class="menu" id="menuBtn" aria-expanded="false" aria-controls="navLinks">Menu</button>
     <div class="links" id="navLinks">
@@ -683,13 +741,13 @@ const globe={active:true,rot:-20,tilt:18,target:-78.5,drag:null,t:0};
   function frame(ts){ requestAnimationFrame(frame); if(!globe.active || document.hidden) return; globe.t=ts||0;
     if(!globe.drag){ const d=globe.target-globe.rot; globe.rot += Math.abs(d)>.3 ? d*.035 : (reduce?0:.04); if(Math.abs(d)<=.3) globe.target=globe.rot; }
     const s=S0, cx=s/2, cy=s/2-6, R=s*.42; g.clearRect(0,0,s,s);
-    const halo=g.createRadialGradient(cx,cy,R*.9,cx,cy,R*1.25); halo.addColorStop(0,'rgba(92,208,196,.22)'); halo.addColorStop(1,'rgba(92,208,196,0)'); g.fillStyle=halo; g.beginPath(); g.arc(cx,cy,R*1.25,0,7); g.fill();
-    const sea=g.createRadialGradient(cx-R*.35,cy-R*.4,R*.1,cx,cy,R); sea.addColorStop(0,'#123047'); sea.addColorStop(1,'#071622'); g.fillStyle=sea; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill();
-    g.strokeStyle='rgba(92,208,196,.35)'; g.lineWidth=1; g.stroke();
+    const halo=g.createRadialGradient(cx,cy,R*.9,cx,cy,R*1.25); halo.addColorStop(0,'rgba(76,141,255,.30)'); halo.addColorStop(1,'rgba(76,141,255,0)'); g.fillStyle=halo; g.beginPath(); g.arc(cx,cy,R*1.25,0,7); g.fill();
+    const sea=g.createRadialGradient(cx-R*.35,cy-R*.4,R*.1,cx,cy,R); sea.addColorStop(0,'#0E2A63'); sea.addColorStop(1,'#030915'); g.fillStyle=sea; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill();
+    g.strokeStyle='rgba(111,163,255,.45)'; g.lineWidth=1; g.stroke();
     for(const [lon,lat] of pts){ const [x,y,z]=proj(lon,lat); if(z<=0) continue; const a=.25+.75*z; g.fillStyle=`rgba(${Math.round(150+70*z)},${Math.round(200+30*z)},${Math.round(210+20*z)},${a})`; g.beginPath(); g.arc(cx+R*x,cy-R*y,Math.max(.6,1.35*z*s/520),0,7); g.fill(); }
     hot.forEach((h,i)=>{ const [x,y,z]=proj(h.lon,h.lat); if(z<=.05) return; const px=cx+R*x, py=cy-R*y, ph=((globe.t/1400)+i/5)%1, big=h.li!==undefined;
       g.strokeStyle=h.c; g.globalAlpha=(1-ph)*z*(big?1:.6); g.lineWidth=big?2:1.4; g.beginPath(); g.arc(px,py,(big?6:4)+ph*(big?22:12),0,7); g.stroke(); g.globalAlpha=1;
-      g.fillStyle=h.c; g.beginPath(); g.arc(px,py,big?4.5:3,0,7); g.fill(); if(!big) return; i=h.li; g.font='600 12px "IBM Plex Sans",system-ui,sans-serif'; g.fillStyle='rgba(232,240,246,'+z+')';
+      g.fillStyle=h.c; g.beginPath(); g.arc(px,py,big?4.5:3,0,7); g.fill(); if(!big) return; i=h.li; g.font='600 12px "Inter",system-ui,sans-serif'; g.fillStyle='rgba(232,240,246,'+z+')';
       const off=[[-10,-14,'right'],[-12,20,'right'],[12,4,'left']][i]; g.textAlign=off[2]; g.fillText(h.name, px+off[0], py+off[1]); });
   }
   requestAnimationFrame(frame);
@@ -739,11 +797,11 @@ function renderMap(){ const v=VV(), c=tok(KIND[v.kind].color), mine=locsOf(v), W
   const others=Object.keys(REG).filter(k=>!mine.includes(k)&&REG[k].ll).map(k=>`<circle cx="${wx(REG[k].ll[0])}" cy="${wy(REG[k].ll[1])}" r="3" fill="${tok('--ink-3')}" opacity=".5"/>`).join('');
   const marks=mine.map(id=>{ const R=REG[id], on=id===S.l, x=wx(R.ll[0]), y=wy(R.ll[1]), left=x>W-170;
     return `<g class="mk" data-mk="${id}"><title>${R.name}, ${R.place}</title>${on?`<circle cx="${x}" cy="${y}" r="9" fill="none" stroke="${c}" stroke-width="2"><animate attributeName="r" from="8" to="26" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" from="1" to="0" dur="2s" repeatCount="indefinite"/></circle>`:''}
-      <circle cx="${x}" cy="${y}" r="${on?8:6}" fill="${c}" stroke="#06101A" stroke-width="2"/>${on?`<text x="${left?x-14:x+14}" y="${y+5}" text-anchor="${left?'end':'start'}" fill="${tok('--ink')}" style="font:600 15px var(--f-body);paint-order:stroke;stroke:#06101A;stroke-width:4px">${R.name}</text>`:''}</g>`; }).join('');
+      <circle cx="${x}" cy="${y}" r="${on?8:6}" fill="${c}" stroke="#05070A" stroke-width="2"/>${on?`<text x="${left?x-14:x+14}" y="${y+5}" text-anchor="${left?'end':'start'}" fill="${tok('--ink')}" style="font:600 15px var(--f-body);paint-order:stroke;stroke:#05070A;stroke-width:4px">${R.name}</text>`:''}</g>`; }).join('');
   $('#map').innerHTML=`<div class="scroll-x"><svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="World map with the places you can investigate">
-    <rect width="${W}" height="${H}" fill="#08182A" rx="10"/>
+    <rect width="${W}" height="${H}" fill="#070B12" rx="10"/>
     <g stroke="${tok('--grid')}" stroke-width="1">${[-60,-30,0,30,60].map(l=>`<line x1="0" x2="${W}" y1="${wy(l)}" y2="${wy(l)}"/>`).join('')}${[-150,-120,-90,-60,-30,0,30,60,90,120,150].map(l=>`<line y1="0" y2="${H}" x1="${wx(l)}" x2="${wx(l)}"/>`).join('')}</g>
-    <path d="${WORLD.land}" fill="#13283A" stroke="#2B4A63" stroke-width=".8"/>${others}${marks}</svg></div>
+    <path d="${WORLD.land}" fill="#18202C" stroke="#33405A" stroke-width=".8"/>${others}${marks}</svg></div>
     <p class="small muted" id="mapMsg" style="margin-top:10px">Tap a coloured dot to choose a place. Or tap anywhere else on the map to fetch live NASA data for that exact point.</p>`;
   $('#map svg').addEventListener('click',e=>{ const mk=e.target.closest('[data-mk]'); if(mk){ pickLoc(mk.dataset.mk); return; } const svg=e.currentTarget, rr=svg.getBoundingClientRect(), x=(e.clientX-rr.left)*W/rr.width, y=(e.clientY-rr.top)*H/rr.height; livePoint(x/WORLD.k-180, 85-y/WORLD.k); }); }
 const LIVE_P={snow:['SNODP','T2M','PRECTOTCORR'],heat:['T2M','T2M_MIN','RH2M'],rain:['PRECTOTCORR','T2M','RH2M']};
@@ -761,9 +819,9 @@ function renderMapIndia(){ const v=VV(), M0=REGION_MAP, sel=v.locs[0];
     <text x="${x+w+8}" y="${y+12}" fill="${on?tok('--ink'):tok('--ink-3')}" style="font:600 13px var(--f-body)">${REG[k].name}</text></g>`; }).join('');
   const pulse = (()=>{ const [x,y,w,h]=M0.boxes[sel]; return `<circle cx="${x+w/2}" cy="${y+h/2}" r="10" fill="none" stroke="${tok(KIND[v.kind].color)}" stroke-width="2"><animate attributeName="r" from="8" to="${Math.max(w,h)}" dur="2.2s" repeatCount="indefinite"/><animate attributeName="opacity" from=".9" to="0" dur="2.2s" repeatCount="indefinite"/></circle>`; })();
   $('#map').innerHTML=`<svg viewBox="0 0 ${M0.W} ${M0.H}" role="img" aria-label="Map of India with the study regions">
-    <rect width="${M0.W}" height="${M0.H}" fill="#08182A" rx="10"/>
+    <rect width="${M0.W}" height="${M0.H}" fill="#070B12" rx="10"/>
     <g stroke="${tok('--grid')}" stroke-width="1">${M0.lat.map(([l,y])=>`<line x1="0" x2="${M0.W}" y1="${y}" y2="${y}"/>`).join('')}${M0.lon.map(([l,x])=>`<line y1="0" y2="${M0.H}" x1="${x}" x2="${x}"/>`).join('')}</g>
-    <path d="${M0.land}" fill="#13283A" stroke="#2B4A63" stroke-width="1"/>
+    <path d="${M0.land}" fill="#18202C" stroke="#33405A" stroke-width="1"/>
     <g class="ax">${M0.lat.map(([l,y])=>`<text x="6" y="${y-4}">${l}°N</text>`).join('')}${M0.lon.map(([l,x])=>`<text x="${x+4}" y="${M0.H-8}">${l}°E</text>`).join('')}</g>
     <text x="${M0.labels.arabian[0]}" y="${M0.labels.arabian[1]}" fill="${tok('--ink-3')}" style="font:italic 13px var(--f-body)" text-anchor="middle">Arabian Sea</text>
     <text x="${M0.labels.bay[0]}" y="${M0.labels.bay[1]}" fill="${tok('--ink-3')}" style="font:italic 13px var(--f-body)" text-anchor="middle">Bay of Bengal</text>
@@ -959,7 +1017,7 @@ function drawCity(id){ const cv=$('#ar_'+id); if(!cv) return; const W=cv.clientW
     g.fillStyle=shade(top,.62); g.beginPath(); g.moveTo(x-tw/2,y); g.lineTo(x,y+th/2); g.lineTo(x,y+th/2-hh); g.lineTo(x-tw/2,y-hh); g.closePath(); g.fill();
     g.fillStyle=shade(top,.8); g.beginPath(); g.moveTo(x+tw/2,y); g.lineTo(x,y+th/2); g.lineTo(x,y+th/2-hh); g.lineTo(x+tw/2,y-hh); g.closePath(); g.fill();
     g.fillStyle=top; g.beginPath(); g.moveTo(x,y-th/2-hh); g.lineTo(x+tw/2,y-hh); g.lineTo(x,y+th/2-hh); g.lineTo(x-tw/2,y-hh); g.closePath(); g.fill(); }
-  g.fillStyle=tok('--ink-3'); g.font='11px "IBM Plex Mono",monospace'; g.textAlign='left'; g.fillText('1981 →',8,16); g.textAlign='right'; g.fillText('Jan → Dec',W-8,16); }
+  g.fillStyle=tok('--ink-3'); g.font='11px "DM Mono",monospace'; g.textAlign='left'; g.fillText('1981 →',8,16); g.textAlign='right'; g.fillText('Jan → Dec',W-8,16); }
 
 /* ---------- learn ---------- */
 const QUIZ=[
