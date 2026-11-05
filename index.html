@@ -401,6 +401,12 @@ img,svg,canvas,video{max-width:100%}
   .trow.cont .t-place{visibility:visible} .trow.cont .t-place span{display:none}
   .scan-ctl select{min-width:0;width:100%} .scan-ctl .ctl{width:100%}
 }
+
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin-top:16px}
+.tools>div{border:1px solid var(--line);border-top:3px solid var(--blue-2);border-radius:6px;padding:14px;background:var(--bg-2);display:flex;flex-direction:column;gap:5px}
+.tools b{font:700 15.5px var(--f-display);letter-spacing:-.01em} .tools b a{color:var(--ink)}
+.tools>div>span:last-child{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.cert-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
 
@@ -609,6 +615,7 @@ img,svg,canvas,video{max-width:100%}
           <label class="lbl" for="certName" style="display:block;margin-top:16px">Name on certificate</label>
           <input type="text" id="certName" placeholder="Your name" maxlength="40" style="margin-top:6px">
           <div class="cert" id="cert"></div>
+          <div class="cert-actions"><button class="btn primary" type="button" id="certDl">Download certificate ↓</button></div>
         </div>
       </div>
     </div>
@@ -634,6 +641,15 @@ img,svg,canvas,video{max-width:100%}
         <li>Coming next: <a href="https://grace.jpl.nasa.gov/" target="_blank" rel="noopener">GRACE and GRACE-FO</a> water storage for the Himalaya.</li>
         <li>All statistics are computed in your browser. Nothing is sent anywhere.</li></ul></div>
     </div>
+    <div class="panel built" style="margin-top:24px"><h3 style="font-size:20px">Built with</h3><p class="muted small" style="margin-top:6px">Open tools and open data. The full code is public on GitHub.</p>
+      <div class="tools">
+        <div><span class="lbl">Code</span><b>HTML, CSS &amp; JavaScript</b><span>No frameworks. Charts, maps and the globe are drawn in the browser with SVG and Canvas.</span></div>
+        <div><span class="lbl">Data preparation</span><b>Python &amp; Node.js</b><span>Downloading, averaging and checking NASA data before it goes into the site.</span></div>
+        <div><span class="lbl">Hosting &amp; code</span><b><a href="https://github.com/vivivarm/NEAR" target="_blank" rel="noopener">GitHub</a> &amp; GitHub Pages</b><span>Free, public hosting and version control for every change.</span></div>
+        <div><span class="lbl">NASA data</span><b>NASA POWER · NEX-GDDP-CMIP6</b><span>Measured climate 1981–2025 (MERRA-2) and downscaled projections to 2100.</span></div>
+        <div><span class="lbl">Chat assistant</span><b>Chatbase</b><span>"Detective NE-AR", trained on our methods and results, answers in many languages.</span></div>
+        <div><span class="lbl">Artificial intelligence</span><b>Claude (Anthropic)</b><span>Used to help write the code, process the data and draft texts. Every result is computed from NASA data, and the team reviews the content.</span></div>
+      </div></div>
   </div>
 </main>
 
@@ -1201,6 +1217,23 @@ $('#quizCheck').addEventListener('click',()=>{ let s=0; QUIZ.forEach(([,opts,a],
 function drawCert(){ const n=($('#certName').value||'Your name').trim(), s=$('#certBox').dataset.score||5, d=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   $('#cert').innerHTML=`<div class="eyebrow">NE-AR · Certificate of completion</div><h3>Certified Trend Detective</h3><p class="muted" style="margin-top:6px">This certifies that</p><div class="name"></div><p class="muted">can find, test and explain climate trends in NASA Earth data.</p><p class="small mono" style="margin-top:14px;color:var(--ink-3)">Score ${s}/5 · ${d}</p>`; $('#cert .name').textContent=n; }
 $('#certName').addEventListener('input',drawCert);
+async function certPNG(){ const name=($('#certName').value||'').trim(); if(!name){ toast('Write your name first'); $('#certName').focus(); return; }
+  try{ await document.fonts.ready; }catch(_){}
+  const W=1600,H=1130,c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'), F='"Inter","Helvetica Neue",Arial,sans-serif', MO='"DM Mono",ui-monospace,monospace';
+  const bg=g.createRadialGradient(W/2,0,60,W/2,0,W*.75); bg.addColorStop(0,'#1450B8'); bg.addColorStop(1,'#061A44'); g.fillStyle=bg; g.fillRect(0,0,W,H);
+  g.strokeStyle='#FC3D21'; g.lineWidth=14; g.strokeRect(36,36,W-72,H-72); g.strokeStyle='rgba(255,255,255,.28)'; g.lineWidth=2; g.strokeRect(70,70,W-140,H-140);
+  const logo=document.querySelector('.brand svg'); if(logo){ try{ const xml=new XMLSerializer().serializeToString(logo).replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" '); const img=new Image(); img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml); await img.decode(); g.drawImage(img,W/2-70,120,140,140); }catch(_){} }
+  g.textAlign='center'; g.fillStyle='#D6E2FF'; g.font=`500 26px ${MO}`; g.fillText('NE-AR · NASA SPACE APPS CHALLENGE 2026 · CERTIFICATE OF COMPLETION',W/2,320);
+  g.fillStyle='#FFFFFF'; g.font=`800 92px ${F}`; g.fillText('Certified Trend Detective',W/2,440);
+  g.fillStyle='#BAC2CE'; g.font=`400 34px ${F}`; g.fillText('This certifies that',W/2,530);
+  let fs=96; g.font=`800 ${fs}px ${F}`; while(g.measureText(name).width>W-300&&fs>40){ fs-=4; g.font=`800 ${fs}px ${F}`; } g.fillStyle='#FFFFFF'; g.fillText(name,W/2,650);
+  g.strokeStyle='#FC3D21'; g.lineWidth=4; g.beginPath(); g.moveTo(W/2-360,690); g.lineTo(W/2+360,690); g.stroke();
+  g.fillStyle='#BAC2CE'; g.font=`400 34px ${F}`; g.fillText('can find, test and explain climate trends in NASA Earth data.',W/2,770);
+  const s=$('#certBox').dataset.score||5, d=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  g.fillStyle='#D6E2FF'; g.font=`500 28px ${MO}`; g.fillText(`Score ${s}/5  ·  ${d}  ·  vivivarm.github.io/NEAR`,W/2,880);
+  g.fillStyle='rgba(214,226,255,.6)'; g.font=`400 22px ${F}`; g.fillText('Independent student project by Team NE-AR. Not an official NASA certificate.',W/2,990);
+  const a=document.createElement('a'); a.download=`NE-AR-certificate-${name.replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-|-$/g,'')||'trend-detective'}.png`; a.href=c.toDataURL('image/png'); document.body.appendChild(a); a.click(); a.remove(); toast('Certificate downloaded'); }
+$('#certDl').addEventListener('click',certPNG);
 
 /* ---------- about & faq ---------- */
 function renderAbout(){ const T=[['Sanskriti Verma','Team lead'],['Rishabh','Data & statistics'],['Viviana','Website & experience'],['Sachchit','AR models'],['Sajan','Mobile app'],['Fa Syaka','E-book'],['Jithin','Team member']];

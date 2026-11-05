@@ -38,3 +38,11 @@ Editar `td/site` (archivo de trabajo), reconstruir `index.html`, conservar el bl
 5. Preparar la demo: video corto y presentación.
 6. Pruebas en varios celulares y navegadores; congelar cambios el 13 nov.
 7. Plan B para el día: copia sin internet del sitio y capturas de pantalla.
+
+## Agregado el 5 nov (tarde)
+- [x] Sección "Built with" en About (código, GitHub, datos NASA, Chatbase, IA)
+- [x] Botón "Download certificate" con el nombre de la persona (imagen PNG, sin servidor)
+- [ ] Equipo: foto, nombre completo, rol y 1–2 frases en inglés de cada integrante
+- [ ] Enlaces 2026: e-book, visor AR, APK Android (hoy apuntan a los de 2025)
+- [ ] Formulario de contacto: definir correo del equipo (Formspree gratis) o botón "Escríbenos"
+- [ ] Si queda tiempo: chat más interactivo (que el bot pueda abrir casos o lugares del sitio)
