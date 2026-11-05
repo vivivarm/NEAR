@@ -345,6 +345,29 @@ footer a{color:#fff}
 .tip{border-radius:4px}
 a{color:var(--sky)}
 @media (max-width:960px){.links{background:#05070A}.links a[aria-current="page"]::after{left:0;right:auto;top:8px;bottom:8px;width:3px;height:auto}}
+
+/* responsive hardening */
+.range2{flex-wrap:wrap;max-width:100%}
+.range2 input[type=range]{flex:1 1 110px;min-width:0;width:auto}
+.toolbar>*{min-width:0;max-width:100%}
+img,svg,canvas,video{max-width:100%}
+@media (max-width:560px){
+  .section{padding-block:40px}
+  .panel{padding:16px}
+  .hero .ctas .btn{flex:1 1 100%}
+  .stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .step-nav .btn{flex:1 1 auto}
+  .seg{width:100%} .seg button{flex:1 1 auto}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px}
+  .tabs button{flex:none}
+  .page-r{padding:18px}
+  .verdict h3{font-size:23px}
+  .cert{padding:22px 16px} .cert .name{font-size:27px}
+  .fact b{font-size:28px}
+  .team{grid-template-columns:minmax(0,1fr)}
+  .demo-bar{flex-direction:column;gap:10px;text-align:center}
+  footer .wrap{flex-direction:column}
+}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
 
@@ -760,7 +783,7 @@ const globe={active:true,rot:-20,tilt:18,target:-78.5,drag:null,t:0};
     hot.forEach((h,i)=>{ const [x,y,z]=proj(h.lon,h.lat); if(z<=.05) return; const px=cx+R*x, py=cy-R*y, ph=((globe.t/1400)+i/5)%1, big=h.li!==undefined;
       g.strokeStyle=h.c; g.globalAlpha=(1-ph)*z*(big?1:.6); g.lineWidth=big?2:1.4; g.beginPath(); g.arc(px,py,(big?6:4)+ph*(big?22:12),0,7); g.stroke(); g.globalAlpha=1;
       g.fillStyle=h.c; g.beginPath(); g.arc(px,py,big?4.5:3,0,7); g.fill(); if(!big) return; i=h.li; g.font='600 12px "Inter",system-ui,sans-serif'; g.fillStyle='rgba(232,240,246,'+z+')';
-      const off=[[-10,-14,'right'],[-12,20,'right'],[12,4,'left']][i]; g.textAlign=off[2]; g.fillText(h.name, px+off[0], py+off[1]); });
+      const off=[[-10,-14,'right'],[-12,20,'right'],[12,4,'left']][i]; let tx=px+off[0], al=off[2]; const tw=g.measureText(h.name).width, cw=g.canvas.clientWidth||g.canvas.width; if(al==='left'&&tx+tw>cw-6){al='right';tx=px-12;} if(al==='right'&&tx-tw<6){al='left';tx=px+12;} g.textAlign=al; g.fillText(h.name, tx, py+off[1]); });
   }
   requestAnimationFrame(frame);
   wrap.addEventListener('pointerdown',e=>{ globe.drag={x:e.clientX,rot:globe.rot}; wrap.setPointerCapture(e.pointerId); });
