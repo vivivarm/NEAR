@@ -25,7 +25,7 @@
 4. **Confirmar con Viviana** dónde aparece el texto de "coverage" que vio, para cambiarlo por "próximamente". Pedirle un pantallazo.
 5. ✅ **Chatbase (hecho):** se subió chatbase-knowledge-ne-ar.txt con los 49 resultados reales. Ojo: el plan gratis permite solo 50 mensajes al mes; decidir antes de la competencia si se usa la prueba gratis de 7 días u otra herramienta.
 6. **Mensaje en inglés para el equipo** presentando el sitio y los hallazgos de los datos.
-7. **Proyecciones futuras CMIP6** (NEX-GDDP-CMIP6, SSP2-4.5 y SSP5-8.5) para la máquina del tiempo: paso a paso en Google Colab.
+7. ✅ **Proyecciones futuras CMIP6 (hecho el 5 nov):** datos reales de NASA NEX-GDDP-CMIP6 para los 15 lugares (temperatura y lluvia, SSP2-4.5 y SSP5-8.5, 2030–2100), en la máquina del tiempo del paso 6. Datos en `data/cmip6-projections.json`.
 
 ## Cómo publicar cambios
 Editar `td/site` (archivo de trabajo), reconstruir `index.html`, conservar el bloque de Chatbase al final y hacer commit y push a `main`. GitHub Pages publica en 1–2 minutos.
