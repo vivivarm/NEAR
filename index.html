@@ -1054,6 +1054,9 @@ $('#contactForm').addEventListener('submit',e=>{ e.preventDefault(); const n=$('
 let rz,lw=0; new ResizeObserver(en=>{ const w=Math.round(en[0].contentRect.width); if(w===lw) return; lw=w; clearTimeout(rz); rz=setTimeout(()=>{ const p=(location.hash||'#home').slice(1); if(p==='detective'&&S.step>=3) render(); if(p==='ebook') renderBook(); if(p==='ar') AR_IDS.forEach(drawCity); },160); }).observe(document.body);
 route();
 </script>
-
+<!-- Chatbase assistant (NE-AR) -->
+<script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="n6bFieyozHLSY4lc7bGQM";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+</script>
 </body>
 </html>
