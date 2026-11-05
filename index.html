@@ -368,6 +368,39 @@ img,svg,canvas,video{max-width:100%}
   .demo-bar{flex-direction:column;gap:10px;text-align:center}
   footer .wrap{flex-direction:column}
 }
+
+/* trend scanner table */
+.scan-ctl{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end}
+.scan-ctl select{min-width:220px}
+.chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);cursor:pointer;padding-bottom:6px}
+.chk input{accent-color:var(--accent);width:16px;height:16px}
+.scan-table{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+.trow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.25fr) 150px minmax(0,1fr) minmax(0,.8fr) 128px 136px;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.trow.th{border-top:0;background:var(--panel-2);font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding-block:10px}
+.trow.grp{display:block;background:rgba(20,80,184,.14);font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:#D6E2FF;padding-block:9px}
+.trow.flash{animation:flash 1.6s ease}
+@keyframes flash{0%,40%{background:rgba(252,61,33,.18)}100%{background:transparent}}
+.t-place b{display:block;font:700 15px var(--f-display);letter-spacing:-.01em}
+.t-place span{font-size:12.5px;color:var(--ink-3)}
+.t-clue{display:flex;align-items:center;gap:8px;font-size:14px}
+.t-clue i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--c)}
+.t-rate{font:600 14px var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.t-rate .arr{color:var(--c)} .trow.ns .t-rate .arr{color:var(--ink-3)}
+.t-rate small{font:400 11.5px var(--f-mono);color:var(--ink-3);display:block;white-space:normal}
+.t-p{font:500 12.5px var(--f-mono);color:var(--ink-2)}
+.t-open{justify-self:end}
+.t-open .btn{white-space:nowrap}
+.trow.cont{border-top-color:rgba(38,45,57,.45)}
+.trow.cont .t-place{visibility:hidden}
+.scan-empty{padding:26px 16px;text-align:center;color:var(--ink-2)}
+@media (max-width:860px){
+  .trow.th{display:none}
+  .trow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"place badge" "clue clue" "spark spark" "rate p" "open open";gap:8px 12px;padding:14px}
+  .t-place{grid-area:place} .t-badge{grid-area:badge;justify-self:end} .t-clue{grid-area:clue} .t-spark{grid-area:spark} .t-rate{grid-area:rate} .t-p{grid-area:p;justify-self:end;align-self:end} .t-open{grid-area:open;justify-self:stretch}
+  .t-open .btn{width:100%}
+  .trow.cont .t-place{visibility:visible} .trow.cont .t-place span{display:none}
+  .scan-ctl select{min-width:0;width:100%} .scan-ctl .ctl{width:100%}
+}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
 
@@ -410,7 +443,7 @@ img,svg,canvas,video{max-width:100%}
           <button class="btn" id="homeDemo"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Watch a demo case</button>
         </div>
       </div>
-      <div class="globe-wrap" id="globeWrap"><canvas id="globe" aria-label="Rotating globe with every place you can investigate"></canvas><div class="globe-cap">Drag to spin · tap a coloured ring to open its case · white rings load live NASA data</div></div>
+      <div class="globe-wrap" id="globeWrap"><canvas id="globe" aria-label="Rotating globe with every place you can investigate"></canvas><div class="globe-cap">Drag to spin · tap any ring to see its clues in the Trend scanner</div></div>
     </section>
     <div class="facts" id="facts"></div>
 
@@ -419,9 +452,16 @@ img,svg,canvas,video{max-width:100%}
       <div class="cases" id="cases"></div>
     </section>
 
-    <section class="section" style="padding-top:8px">
-      <div class="section-head"><div><div class="eyebrow">Trend scanner</div><h2 id="scanTitle">Every clue at a glance</h2><p>Every variable we have for each place, tested for a trend over 1981–2025. Coloured arrows passed the 95% significance test; grey ones could still be chance.</p></div></div>
-      <div class="scanner" id="scanner"></div>
+    <section class="section" style="padding-top:8px" id="scanSection">
+      <div class="section-head"><div><div class="eyebrow">Trend scanner</div><h2 id="scanTitle">Every clue at a glance</h2><p>Every NASA variable we have for each place, tested for a trend over 1981–2025. Start with our three featured places, then filter by what matters to you, or tap any ring on the globe.</p></div></div>
+      <div class="panel scan-ctl">
+        <div class="ctl"><span class="lbl">Places</span><div class="seg" id="scanSet" role="group" aria-label="Places to show"><button data-set="featured">Featured 3</button><button data-set="india">India</button><button data-set="world">World</button><button data-set="all">All</button></div></div>
+        <div class="ctl"><label class="lbl" for="scanPlace">Or one place</label><select id="scanPlace"></select></div>
+        <div class="ctl"><span class="lbl">Clue</span><div class="seg" id="scanClue" role="group" aria-label="Clue type"><button data-clue="all">All</button><button data-clue="snow">Snow &amp; ice</button><button data-clue="heat">Heat</button><button data-clue="rain">Rain</button><button data-clue="other">Humidity &amp; soil</button></div></div>
+        <label class="chk"><input type="checkbox" id="scanSig"> Only significant trends</label>
+      </div>
+      <p class="small muted" id="scanMsg" style="margin:12px 2px 10px" aria-live="polite"></p>
+      <div class="scan-table" id="scanner" role="table" aria-label="Trend scanner results"></div>
     </section>
 
     <section class="section" style="padding-top:8px">
@@ -682,7 +722,7 @@ const REG={
   andes:{name:'Colombian Andes',place:'Bogotá savanna, Colombia',box:'4.25–5.25°N · 74.5–73.5°W',n:4,land:'High Andean plateau around Bogotá',ll:[-74,4.75]},
   pnw:{name:'Pacific Northwest',place:'Washington, USA',box:'46.5–48.5°N · 124–122°W',n:4,land:'Temperate rainforest coast',ll:[-123,47.5]}};
 const CITIES=[['New York','USA',-74.0,40.7],['Mexico City','Mexico',-99.13,19.43],['Medellín','Colombia',-75.57,6.25],['Lima','Peru',-77.04,-12.05],['São Paulo','Brazil',-46.63,-23.55],['Buenos Aires','Argentina',-58.38,-34.6],['Reykjavík','Iceland',-21.9,64.15],['London','UK',-0.13,51.51],['Paris','France',2.35,48.86],['Moscow','Russia',37.62,55.75],['Cairo','Egypt',31.24,30.04],['Lagos','Nigeria',3.38,6.52],['Nairobi','Kenya',36.82,-1.29],['Cape Town','South Africa',18.42,-33.92],['Dubai','UAE',55.27,25.2],['Beijing','China',116.4,39.9],['Jakarta','Indonesia',106.85,-6.2],['Tokyo','Japan',139.69,35.69],['Sydney','Australia',151.21,-33.87],['Anchorage','Alaska, USA',-149.9,61.22]];
-const PNAME={SNODP:['Snow depth','cm',2,'snow'],T2M:['Air temperature','°C',2,'heat'],T2M_MIN:['Night-time minimum temperature','°C',2,'heat'],PRECTOTCORR:['Rainfall','mm/day',2,'rain'],RH2M:['Relative humidity','%',1,'hum']};
+const PNAME={T2M_MAX:['Daytime maximum temperature','°C',2,'heat'],FRSNO:['Snow cover','fraction of ground',3,'snow'],GWETROOT:['Root-zone soil wetness','0–1 index',3,'soil'],SNODP:['Snow depth','cm',2,'snow'],T2M:['Air temperature','°C',2,'heat'],T2M_MIN:['Night-time minimum temperature','°C',2,'heat'],PRECTOTCORR:['Rainfall','mm/day',2,'rain'],RH2M:['Relative humidity','%',1,'hum']};
 Object.keys(GLOB).forEach(k=>{ const p=k.split('_').slice(0,-1).join('_'), rid=k.split('_').pop(), [name,unit,dp,kind]=PNAME[p], R=REG[rid];
   META[k]={name:(p==='PRECTOTCORR'&&['sikkim','alps','sierra','rockies'].includes(rid))?'Precipitation (rain + snow)':name,unit,dp,kind,p};
   (R.keys=R.keys||[]).push(k); if(!R.main) R.main=k; });
@@ -798,11 +838,10 @@ const globe={active:true,rot:-20,tilt:18,target:-78.5,drag:null,t:0};
     g.textBaseline='alphabetic';
   }
   function hit(e){ const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; let best=null, bd=e.pointerType==='touch'?22:14; for(const o of seen){ const d=Math.hypot(o.px-x,o.py-y); if(d<bd){bd=d;best=o.h;} } return best; }
-  function openPlace(h){ if(h.city!==undefined){ const c=CITIES[h.city]; Object.assign(S,{v:'heat',l:null,key:null,step:2,max:2,tested:false,result:null}); location.hash='#detective'; setTimeout(()=>livePoint(c[2],c[3],[c[0],c[1]],true),400); return; }
-    const v=VARS.find(x=>x.locs.includes(h.k))||VARS.find(x=>x.kind===META[REG[h.k].main].kind); Object.assign(S,{v:v.id,l:h.k,key:REG[h.k].main,max:3,step:3,tested:false,result:null}); location.hash='#detective'; }
+  function openPlace(h){ if(h.city!==undefined){ const c=CITIES[h.city]; scanLive(c[2],c[3],[c[0],c[1]]); return; } scanFocus(h.k); }
   requestAnimationFrame(frame);
   wrap.addEventListener('pointerdown',e=>{ globe.drag={x:e.clientX,y:e.clientY,rot:globe.rot,moved:false,h:hit(e)}; wrap.setPointerCapture(e.pointerId); });
-  wrap.addEventListener('pointermove',e=>{ if(!globe.drag){ const h=hit(e); globe.hover=h; wrap.style.cursor=h?'pointer':''; wrap.title=h?(h.big?`${h.name}: open this case`:`${h.name}: load live NASA data`):''; return; }
+  wrap.addEventListener('pointermove',e=>{ if(!globe.drag){ const h=hit(e); globe.hover=h; wrap.style.cursor=h?'pointer':''; wrap.title=h?(h.big?`${h.name}: show its clues`:`${h.name}: load live NASA data`):''; return; }
     if(Math.abs(e.clientX-globe.drag.x)+Math.abs(e.clientY-globe.drag.y)>6) globe.drag.moved=true; if(globe.drag.moved){ globe.rot=globe.drag.rot+(e.clientX-globe.drag.x)*.35; globe.target=globe.rot; } });
   wrap.addEventListener('pointerup',e=>{ const d=globe.drag; globe.drag=null; if(d&&!d.moved){ const h=hit(e)||d.h; if(h) openPlace(h); } });
   wrap.addEventListener('pointerleave',()=>{ if(!globe.drag){ globe.hover=null; wrap.style.cursor=''; } });
@@ -819,12 +858,53 @@ function renderHome(){
       <div class="rate">${fmt(r.slope*10,2)}<small>${m.unit} per decade · ${m.name.toLowerCase()}</small></div>
       <span class="small muted">${fmtP(r.p)} · Mann-Kendall, 1981–2025</span></a>`; }).join('');
   $$('[data-case]').forEach(a=>a.addEventListener('click',()=>{ const v=VARS.find(x=>x.id===a.dataset.case); Object.assign(S,{v:v.id,l:v.locs[0],key:REG[v.locs[0]].main,max:3,step:3,tested:false}); }));
-  const row=k=>{ const r=SCAN[k], m=META[k], sig=r.p<0.05; return `<div class="scan-row ${sig?'sig':'ns'}" style="--c:${kc(k)}"><span class="arr">${arrow(r)}</span><span>${m.name}</span><span class="v">${fmt(r.slope*10,m.dp)} ${m.unit.replace('% of ','%·')}/dec</span></div>`; };
-  const india=['himalaya','thar','sundarbans'], world=Object.keys(REG).filter(k=>!india.includes(k)&&k!=='custom');
-  $('#scanTitle').textContent=`${Object.keys(SCAN).length} clues at a glance`;
-  $('#scanner').innerHTML=india.map(rid=>`<div class="panel scan-col"><h4>${REG[rid].name}</h4>${REG[rid].keys.map(row).join('')}</div>`).join('')
-    + `<div class="panel scan-col world"><h4>Around the world</h4><div class="rows">${world.map(rid=>{ const R=REG[rid]; return `<div><div class="flag" style="margin-top:12px">${R.name} · ${R.place}</div>${R.keys.map(row).join('')}</div>`; }).join('')}</div></div>`;
+  renderScan();
 }
+
+/* ---------- trend scanner (filterable table) ---------- */
+const FEAT=['himalaya','thar','sundarbans'];
+const SC={set:'featured',place:'',clue:'all',sig:false,flash:null};
+const inIndia=id=>/India/.test(REG[id].place);
+const theR=R=>(R===REG.custom||R.name==='Delhi')?R.name:'the '+R.name;
+function placeOrder(){ const ids=Object.keys(REG).filter(k=>k!=='custom'); return [...FEAT, ...ids.filter(k=>!FEAT.includes(k)&&inIndia(k)), ...ids.filter(k=>!inIndia(k)), ...(REG.custom?['custom']:[])]; }
+function clueOk(k){ const kd=META[k].kind; return SC.clue==='all'||(SC.clue==='other'?['hum','soil'].includes(kd):kd===SC.clue); }
+function scanPlaces(){ const all=placeOrder(); if(SC.place) return [SC.place].filter(id=>REG[id]);
+  return SC.set==='featured'?FEAT:SC.set==='india'?all.filter(id=>id!=='custom'&&inIndia(id)):SC.set==='world'?all.filter(id=>id==='custom'||!inIndia(id)):all; }
+function scanSelect(){ const o=(id,t)=>`<option value="${id}" ${SC.place===id?'selected':''}>${t}</option>`; const all=placeOrder();
+  $('#scanPlace').innerHTML=o('','Choose a place…')+`<optgroup label="Featured">${FEAT.map(id=>o(id,REG[id].name)).join('')}</optgroup><optgroup label="India">${all.filter(id=>id!=='custom'&&inIndia(id)&&!FEAT.includes(id)).map(id=>o(id,REG[id].name)).join('')}</optgroup><optgroup label="Around the world">${all.filter(id=>id!=='custom'&&!inIndia(id)).map(id=>o(id,`${REG[id].name} · ${REG[id].place.split(',').pop().trim()}`)).join('')}</optgroup>${REG.custom?`<optgroup label="Live from NASA">${o('custom',REG.custom.name)}</optgroup>`:''}`; }
+function renderScan(){ if(!$('#scanner')) return; scanSelect();
+  $$('#scanSet button').forEach(b=>b.setAttribute('aria-pressed',!SC.place&&b.dataset.set===SC.set)); $$('#scanClue button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.clue===SC.clue)); $('#scanSig').checked=SC.sig;
+  const places=scanPlaces(); let total=0, sigN=0; const groups=[];
+  for(const id of places){ const R=REG[id]; const ks=(R.keys||[]).filter(k=>SCAN[k]&&clueOk(k)&&(!SC.sig||SCAN[k].p<0.05)); total+=ks.length; sigN+=ks.filter(k=>SCAN[k].p<0.05).length; if(ks.length) groups.push([id,ks]); }
+  const head=`<div class="trow th" role="row"><span role="columnheader">Place</span><span role="columnheader">Clue</span><span role="columnheader">1981–2025</span><span role="columnheader">Change per decade</span><span role="columnheader">Evidence</span><span role="columnheader">Verdict</span><span></span></div>`;
+  const grpLabel=id=>id==='custom'?'Live from NASA':FEAT.includes(id)?'Featured':inIndia(id)?'India':'Around the world';
+  let last='', rows='';
+  for(const [id,ks] of groups){ const R=REG[id], g=grpLabel(id); if(g!==last&&!SC.place){ rows+=`<div class="trow grp" role="row">${g}</div>`; last=g; }
+    rows+=ks.map((k,j)=>{ const r=SCAN[k], m=META[k], sig=r.p<0.05; return `<div class="trow ${sig?'sig':'ns'} ${j?'cont':''} ${SC.flash===id?'flash':''}" role="row" style="--c:${kc(k)}">
+      <div class="t-place" role="cell"><b>${R.name}</b><span>${R.place}</span></div>
+      <div class="t-clue" role="cell"><i></i>${m.name}</div>
+      <div class="t-spark" role="cell">${spark(k,150,34)}</div>
+      <div class="t-rate" role="cell"><span class="arr">${arrow(r)}</span> ${fmt(r.slope*10,m.dp)}<small>${m.unit} per decade</small></div>
+      <div class="t-p" role="cell">${fmtP(r.p)}</div>
+      <div class="t-badge" role="cell"><span class="badge ${sig?'sig':'ns'}">${sig?'Significant':'Could be chance'}</span></div>
+      <div class="t-open" role="cell"><button class="btn sm" data-open="${id}|${k}">Open case →</button></div></div>`; }).join(''); }
+  $('#scanner').innerHTML=groups.length?head+rows:`<div class="scan-empty">No clues match these filters yet. Try “All” clues or switch off “Only significant”.</div>`;
+  const where=SC.place?REG[SC.place].name:{featured:'our 3 featured places',india:'places in India',world:'places around the world',all:'every place'}[SC.set];
+  $('#scanTitle').textContent=`${total} clue${total===1?'':'s'} at a glance`;
+  if(!SC.busy) $('#scanMsg').innerHTML=`Showing <b>${where}</b> · ${sigN} of ${total} trends pass the 95% significance test. Grey arrows could still be chance.`;
+  SC.flash=null; }
+$('#scanSet').addEventListener('click',e=>{ const b=e.target.closest('[data-set]'); if(!b) return; SC.set=b.dataset.set; SC.place=''; renderScan(); });
+$('#scanClue').addEventListener('click',e=>{ const b=e.target.closest('[data-clue]'); if(!b) return; SC.clue=b.dataset.clue; renderScan(); });
+$('#scanPlace').addEventListener('change',e=>{ SC.place=e.target.value; if(!SC.place) SC.set='featured'; renderScan(); });
+$('#scanSig').addEventListener('change',e=>{ SC.sig=e.target.checked; renderScan(); });
+$('#scanner').addEventListener('click',e=>{ const b=e.target.closest('[data-open]'); if(!b) return; const [id,k]=b.dataset.open.split('|'); openCase(id,k); });
+function openCase(id,k){ const kd=META[k].kind; let v=VARS.find(x=>x.kind===kd&&x.locs.includes(id))||VARS.find(x=>x.locs.includes(id))||VARS.find(x=>x.kind===kd)||VARS[0];
+  if(id==='custom'){ v=VARS.find(x=>x.kind===kd)||v; REG.custom.kind=v.kind; REG.custom.main=k; }
+  Object.assign(S,{v:v.id,l:id,key:k,max:3,step:3,tested:false,result:null}); location.hash='#detective'; }
+function scanFocus(id){ SC.place=id; SC.clue='all'; SC.sig=false; SC.flash=id; renderScan(); $('#scanSection').scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'}); toast(`${REG[id].name} is now in the Trend scanner`); }
+async function scanLive(lon,lat,label){ SC.busy=true; $('#scanSection').scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'}); $('#scanMsg').innerHTML=`Asking NASA POWER for live data on <b>${label?label[0]:fmtLL(lat,lon)}</b>…`;
+  try{ await loadLive(lon,lat,label,null); SC.busy=false; SC.place='custom'; SC.clue='all'; SC.sig=false; SC.flash='custom'; renderScan(); toast(`Live NASA data loaded for ${REG.custom.name}`); }
+  catch(err){ SC.busy=false; $('#scanMsg').innerHTML=liveErr(err); } }
 $('#homeDemo').addEventListener('click',()=>{ location.hash='#detective'; setTimeout(demo,350); });
 
 /* ---------- detective state ---------- */
@@ -856,16 +936,29 @@ function renderMap(){ const v=VV(), c=tok(KIND[v.kind].color), mine=locsOf(v), W
     <path d="${WORLD.land}" fill="#18202C" stroke="#33405A" stroke-width=".8"/>${others}${CITIES.map((c,i)=>`<g class="mk" data-city="${i}"><title>${c[0]}, ${c[1]} · live NASA data</title><circle cx="${wx(c[2])}" cy="${wy(c[3])}" r="9" fill="transparent"/><circle cx="${wx(c[2])}" cy="${wy(c[3])}" r="4" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/></g>`).join('')}${marks}</svg></div>
     <p class="small muted" id="mapMsg" style="margin-top:10px">Tap a coloured dot to choose a place. White rings are famous cities with live NASA data, and you can tap anywhere else on Earth to fetch live data for that exact point.</p>`;
   $('#map svg').addEventListener('click',e=>{ const ci=e.target.closest('[data-city]'); if(ci){ const c=CITIES[+ci.dataset.city]; livePoint(c[2],c[3],[c[0],c[1]]); return; } const mk=e.target.closest('[data-mk]'); if(mk){ pickLoc(mk.dataset.mk); return; } const svg=e.currentTarget, rr=svg.getBoundingClientRect(), x=(e.clientX-rr.left)*W/rr.width, y=(e.clientY-rr.top)*H/rr.height; livePoint(x/WORLD.k-180, 85-y/WORLD.k); }); }
-const LIVE_P={snow:['SNODP','T2M','PRECTOTCORR'],heat:['T2M','T2M_MIN','RH2M'],rain:['PRECTOTCORR','T2M','RH2M']};
-async function livePoint(lon,lat,label,autoGo){ const v=VV(), la=+lat.toFixed(2), lo=+lon.toFixed(2), ps=LIVE_P[v.kind]; const mm0=$('#mapMsg'); if(mm0) mm0.textContent=`Asking NASA POWER for ${label?label[0]:fmtLL(la,lo)}…`; else toast(`Asking NASA POWER for ${label?label[0]:fmtLL(la,lo)}…`);
-  try{ const res=await fetch(`https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${ps.join(',')}&community=AG&latitude=${la}&longitude=${lo}&start=1981&end=2025&format=JSON`); if(!res.ok) throw new Error('HTTP '+res.status);
-    const P=(await res.json()).properties.parameter; Object.keys(META).filter(k=>k.endsWith('_custom')).forEach(k=>{ delete META[k]; delete SER[k]; delete SCAN[k]; }); const keys=[]; const flat=[];
-    for(const p of ps){ const arr=[]; let bad=false; for(let y=Y0;y<=Y1;y++) for(let m=1;m<=12;m++){ const x=P[p][`${y}${String(m).padStart(2,'0')}`]; if(x==null||x===-999) bad=true; arr.push(x); } if(bad) continue;
-      const [name,unit,dp,kind]=PNAME[p]; if(Math.max(...arr)-Math.min(...arr)<1e-6){ flat.push(name.toLowerCase()); continue; } const k=`${p}_custom`; SER[k]=arr; META[k]={name,unit,dp,kind,p,region:'custom',source:`NASA POWER ${p} (MERRA-2 reanalysis), live`}; SCAN[k]=mannKendall(seasonal(arr,'all',Y0,Y1)); keys.push(k); }
-    if(!keys.length) throw new Error('no data');
-    REG.custom={name:label?label[0]:'Your point',place:label?`${label[0]}, ${label[1]}`:fmtLL(la,lo),box:fmtLL(la,lo),n:1,land:label?`Live NASA data for ${label[0]} (${fmtLL(la,lo)})`:'Chosen by you on the map, live from NASA',ll:[lo,la],keys,main:keys[0],kind:v.kind};
-    pickLoc('custom'); if(flat.length){ const msg=`No ${flat.join(' or ')} at this point in 1981–2025, so there is no trend to test for it. The other clues for this point are ready.`; toast(msg); const mm=$('#mapMsg'); if(mm) mm.innerHTML=`<b style="color:var(--warn)">${msg}</b>`; } else toast(label?`Live NASA data loaded for ${label[0]}`:'Live NASA data loaded for your point'); if(autoGo&&!flat.length) go(3);
-  }catch(err){ if(/github\.io$/.test(location.hostname)||location.protocol==='https:'&&!/claude/.test(location.hostname)){ $('#mapMsg').innerHTML=err.message==='no data'?`<b style="color:var(--warn)">NASA has no usable data for this variable at that point.</b> Try a point on land, or choose one of the coloured dots.`:`<b style="color:var(--warn)">NASA POWER did not answer.</b> Please try again in a moment, or choose one of the coloured dots.`; return; } $('#mapMsg').innerHTML=`<b style="color:var(--warn)">This preview can’t reach NASA directly.</b> On the published site, tapping the map fetches live NASA POWER data for any point on Earth. For now, choose one of the coloured dots.`; } }
+const LIVE_ALL=['T2M','T2M_MIN','T2M_MAX','PRECTOTCORR','RH2M','SNODP','FRSNO','GWETROOT'];
+const isPub=()=>location.protocol==='https:'&&!/claude|anthropic|usercontent/.test(location.hostname);
+async function loadLive(lon,lat,label,kind){ const la=+lat.toFixed(2), lo=+lon.toFixed(2);
+  const res=await fetch(`https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${LIVE_ALL.join(',')}&community=AG&latitude=${la}&longitude=${lo}&start=1981&end=2025&format=JSON`); if(!res.ok) throw new Error('HTTP '+res.status);
+  const P=((await res.json()).properties||{}).parameter||{}; Object.keys(META).filter(k=>k.endsWith('_custom')).forEach(k=>{ delete META[k]; delete SER[k]; delete SCAN[k]; }); const keys=[], flat=[];
+  for(const p of LIVE_ALL){ if(!P[p]) continue; const arr=[]; let bad=false; for(let y=Y0;y<=Y1;y++) for(let m=1;m<=12;m++){ const x=P[p][`${y}${String(m).padStart(2,'0')}`]; if(x==null||x===-999) bad=true; arr.push(x); } if(bad) continue;
+    const [name,unit,dp,kd]=PNAME[p]; if(Math.max(...arr)-Math.min(...arr)<1e-6){ flat.push(kd); continue; } const k=`${p}_custom`; SER[k]=arr; META[k]={name,unit,dp,kind:kd,p,region:'custom',source:`NASA POWER ${p} (MERRA-2 reanalysis), live`}; SCAN[k]=mannKendall(seasonal(arr,'all',Y0,Y1)); keys.push(k); }
+  if(!keys.length) throw new Error('no data');
+  if(kind) keys.sort((a,b)=>(META[b].kind===kind)-(META[a].kind===kind));
+  REG.custom={name:label?label[0]:'Your point',place:label?`${label[0]}, ${label[1]}`:fmtLL(la,lo),box:fmtLL(la,lo),n:1,land:label?`Live NASA data for ${label[0]} (${fmtLL(la,lo)})`:'Chosen by you on the map, live from NASA',ll:[lo,la],keys,main:keys[0],kind:kind||META[keys[0]].kind,live:true};
+  return {keys,flat}; }
+function liveErr(err){ if(!isPub()) return `<b style="color:var(--sky)">Live NASA data opens on the published site.</b> On <a href="https://vivivarm.github.io/NEAR/" target="_blank" rel="noopener">vivivarm.github.io/NEAR</a> you can load any point on Earth. Here in the preview, choose one of the coloured rings.`;
+  return err&&err.message==='no data' ? `<b style="color:var(--sky)">Live coverage for this exact spot is coming soon.</b> Meanwhile, try a nearby point on land or one of the rings on the map.` : `<b style="color:var(--sky)">NASA’s live service is taking a short break.</b> Please try again in a moment, or choose one of the rings.`; }
+const CLUE_NOUN={snow:'snow on the ground',heat:'temperature record',rain:'rain record'};
+async function livePoint(lon,lat,label,autoGo){ const v=VV(); const setMsg=h=>{ const mm=$('#mapMsg'); if(mm) mm.innerHTML=h; else toast(h.replace(/<[^>]+>/g,'')); };
+  setMsg(`Asking NASA POWER for live data on <b>${label?label[0]:fmtLL(lat,lon)}</b>…`);
+  try{ const r=await loadLive(lon,lat,label,v.kind); const nm=REG.custom.name, who=nm==='Your point'?'This spot':nm, has=r.keys.some(k=>META[k].kind===v.kind);
+    pickLoc('custom');
+    const names=[...new Set(r.keys.map(k=>META[k].name.toLowerCase()))]; const list=names.length>2?names.slice(0,-1).join(', ')+' and '+names[names.length-1]:names.join(' and ');
+    if(!has){ const msg=`${who} has no ${CLUE_NOUN[v.id]||v.name.toLowerCase()} to track, so we lined up its other NASA clues instead: ${list}.`; setMsg(`<b style="color:var(--sky)">${msg}</b>`); toast(`${who}: ${r.keys.length} live NASA clues ready`); }
+    else { setMsg(`<b style="color:var(--sky)">Live NASA data ready for ${nm==='Your point'?'your point':nm}:</b> ${list}.`); toast(`Live NASA data loaded for ${nm==='Your point'?'your point':nm}`); }
+    if(autoGo) go(3);
+  }catch(err){ setMsg(liveErr(err)); } }
 function renderMapIndia(){ const v=VV(), M0=REGION_MAP, sel=v.locs[0];
   const boxes=Object.entries(M0.boxes).map(([k,[x,y,w,h]])=>{ const on=k===sel, c=tok(KIND[META[REG[k].main].kind].color); return `<g opacity="${on?1:.35}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity="${on?.18:.08}" stroke="${c}" stroke-width="${on?2:1}" rx="2"/>${M0.pts[k].map(([px,py])=>`<circle cx="${px}" cy="${py}" r="${on?3.2:2}" fill="${c}"/>`).join('')}
     <text x="${x+w+8}" y="${y+12}" fill="${on?tok('--ink'):tok('--ink-3')}" style="font:600 13px var(--f-body)">${REG[k].name}</text></g>`; }).join('');
@@ -886,7 +979,7 @@ function pickLoc(id){ S.l=id; S.key=REG[id].main; S.tested=false; S.result=null;
 
 /* step 3 */
 function renderLine(){ const m=M(), R=REG[S.l], arr=arrS(), wrap=$('#lineWrap'), K=KIND[m.kind];
-  $('#evTitle').textContent=`${m.name} in the ${R.name}, month by month`; $('#evSub').textContent=`Average of ${R.n} NASA POWER grid points over ${R.place}. Hover or tap the chart to read any month.`;
+  $('#evTitle').textContent=`${m.name} in ${theR(R)}, month by month`; $('#evSub').textContent=`Average of ${R.n} NASA POWER grid points over ${R.place}. Hover or tap the chart to read any month.`;
   const i0=(S.y0-Y0)*12, i1=(S.y1-Y0)*12+11, anom=S.view==='anom', base=anom?anomalies(arr):arr, vals=base.slice(i0,i1+1);
   const roll=vals.map((_,i)=>{ if(i<6||i>vals.length-6) return null; let s=0; for(let k=i-6;k<i+6;k++) s+=vals[k]; return s/12; });
   const {w,h}=sizeOf(wrap,.4,260,400), mg={l:48,r:12,t:34,b:28}, iw=w-mg.l-mg.r, ih=h-mg.t-mg.b;
@@ -995,7 +1088,7 @@ $('#bandYear').addEventListener('input',e=>{ S.bandYear=+e.target.value; const a
 /* step 6 */
 function caseText(){ const m=M(), R=REG[S.l], r=S.result||(()=>{ const c=compute(); return c.r; })(), arr=arrS(), c=climatology(arr); let o=0,t=0; for(let i=(2006-Y0)*12;i<arr.length;i++){ t++; if(Math.abs((arr[i]-c.mean[i%12])/(c.sd[i%12]||1))>2) o++; }
   return `CASE FILE · NE-AR Trend Detective\nPlace      ${R.name} (${R.place})\nArea       ${R.box}\nClue       ${m.name} (${m.unit})\nData       ${m.source}\nPeriod     ${S.y0}–${S.y1}, ${SEASONS[S.season].label}\nMethod     ${r.method==='mk'?"Mann-Kendall test + Sen's slope":'Linear regression t-test'}\nTrend      ${fmt(r.slope*10,2)} ${m.unit} per decade\nTest       ${r.statName} = ${r.stat.toFixed(2)}, ${fmtP(r.p)}\nVerdict    ${r.p<0.05?'Significant at the 95% level':'Not significant at the 95% level'}\nUnusual    ${o} of ${t} months since 2006 outside the 1981–2010 normal range`; }
-function renderAct(){ const R=REG[S.l], f=FUTURES[S.l]||FUT_KIND[META[R.main].kind]; drawTM(); $('#actTitle').textContent=`Two possible futures for the ${R.name}`; $$('#futureSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===S.future));
+function renderAct(){ const R=REG[S.l], f=FUTURES[S.l]||FUT_KIND[META[R.main].kind]; drawTM(); $('#actTitle').textContent=`Two possible futures for ${theR(R)}`; $$('#futureSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===S.future));
   const fc=S.future==='act'?tok('--good'):tok('--heat-pos'); $('#futures').innerHTML=f[S.future].map(([t,d])=>`<div class="future" style="--fc:${fc}"><div class="tag">${S.future==='act'?'If we act':'If we do nothing'}</div><h4>${t}</h4><p>${d}</p></div>`).join(''); $('#caseFile').textContent=caseText(); }
 S.tmYear=2025;
 function drawTM(){ const k=S.key, m=M(), pts=seasonal(SER[k],'all',Y0,Y1), r=SCAN[k], wrap=$('#tmWrap'), {w,h}=sizeOf(wrap,.3,210,290), mg={l:46,r:12,t:18,b:26}, iw=w-mg.l-mg.r, ih=h-mg.t-mg.b, yr=S.tmYear;
