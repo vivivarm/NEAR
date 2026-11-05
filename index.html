@@ -807,13 +807,13 @@ function renderMap(){ const v=VV(), c=tok(KIND[v.kind].color), mine=locsOf(v), W
 const LIVE_P={snow:['SNODP','T2M','PRECTOTCORR'],heat:['T2M','T2M_MIN','RH2M'],rain:['PRECTOTCORR','T2M','RH2M']};
 async function livePoint(lon,lat){ const v=VV(), la=+lat.toFixed(2), lo=+lon.toFixed(2), ps=LIVE_P[v.kind]; $('#mapMsg').textContent=`Asking NASA POWER for ${fmtLL(la,lo)}…`;
   try{ const res=await fetch(`https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${ps.join(',')}&community=AG&latitude=${la}&longitude=${lo}&start=1981&end=2025&format=JSON`); if(!res.ok) throw new Error('HTTP '+res.status);
-    const P=(await res.json()).properties.parameter; Object.keys(META).filter(k=>k.endsWith('_custom')).forEach(k=>{ delete META[k]; delete SER[k]; delete SCAN[k]; }); const keys=[];
+    const P=(await res.json()).properties.parameter; Object.keys(META).filter(k=>k.endsWith('_custom')).forEach(k=>{ delete META[k]; delete SER[k]; delete SCAN[k]; }); const keys=[]; const flat=[];
     for(const p of ps){ const arr=[]; let bad=false; for(let y=Y0;y<=Y1;y++) for(let m=1;m<=12;m++){ const x=P[p][`${y}${String(m).padStart(2,'0')}`]; if(x==null||x===-999) bad=true; arr.push(x); } if(bad) continue;
-      const k=`${p}_custom`, [name,unit,dp,kind]=PNAME[p]; SER[k]=arr; META[k]={name,unit,dp,kind,p,region:'custom',source:`NASA POWER ${p} (MERRA-2 reanalysis), live`}; SCAN[k]=mannKendall(seasonal(arr,'all',Y0,Y1)); keys.push(k); }
+      const [name,unit,dp,kind]=PNAME[p]; if(Math.max(...arr)-Math.min(...arr)<1e-6){ flat.push(name.toLowerCase()); continue; } const k=`${p}_custom`; SER[k]=arr; META[k]={name,unit,dp,kind,p,region:'custom',source:`NASA POWER ${p} (MERRA-2 reanalysis), live`}; SCAN[k]=mannKendall(seasonal(arr,'all',Y0,Y1)); keys.push(k); }
     if(!keys.length) throw new Error('no data');
     REG.custom={name:'Your point',place:fmtLL(la,lo),box:fmtLL(la,lo),n:1,land:'Chosen by you on the map, live from NASA',ll:[lo,la],keys,main:keys[0],kind:v.kind};
-    pickLoc('custom'); toast('Live NASA data loaded for your point');
-  }catch(err){ $('#mapMsg').innerHTML=`<b style="color:var(--warn)">This preview can’t reach NASA directly.</b> On the published site, tapping the map fetches live NASA POWER data for any point on Earth. For now, choose one of the coloured dots.`; } }
+    pickLoc('custom'); if(flat.length){ const msg=`No ${flat.join(' or ')} at this point in 1981–2025, so there is no trend to test for it. The other clues for this point are ready.`; toast(msg); const mm=$('#mapMsg'); if(mm) mm.innerHTML=`<b style="color:var(--warn)">${msg}</b>`; } else toast('Live NASA data loaded for your point');
+  }catch(err){ if(/github\.io$/.test(location.hostname)||location.protocol==='https:'&&!/claude/.test(location.hostname)){ $('#mapMsg').innerHTML=err.message==='no data'?`<b style="color:var(--warn)">NASA has no usable data for this variable at that point.</b> Try a point on land, or choose one of the coloured dots.`:`<b style="color:var(--warn)">NASA POWER did not answer.</b> Please try again in a moment, or choose one of the coloured dots.`; return; } $('#mapMsg').innerHTML=`<b style="color:var(--warn)">This preview can’t reach NASA directly.</b> On the published site, tapping the map fetches live NASA POWER data for any point on Earth. For now, choose one of the coloured dots.`; } }
 function renderMapIndia(){ const v=VV(), M0=REGION_MAP, sel=v.locs[0];
   const boxes=Object.entries(M0.boxes).map(([k,[x,y,w,h]])=>{ const on=k===sel, c=tok(KIND[META[REG[k].main].kind].color); return `<g opacity="${on?1:.35}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity="${on?.18:.08}" stroke="${c}" stroke-width="${on?2:1}" rx="2"/>${M0.pts[k].map(([px,py])=>`<circle cx="${px}" cy="${py}" r="${on?3.2:2}" fill="${c}"/>`).join('')}
     <text x="${x+w+8}" y="${y+12}" fill="${on?tok('--ink'):tok('--ink-3')}" style="font:600 13px var(--f-body)">${REG[k].name}</text></g>`; }).join('');
@@ -1054,6 +1054,7 @@ $('#contactForm').addEventListener('submit',e=>{ e.preventDefault(); const n=$('
 let rz,lw=0; new ResizeObserver(en=>{ const w=Math.round(en[0].contentRect.width); if(w===lw) return; lw=w; clearTimeout(rz); rz=setTimeout(()=>{ const p=(location.hash||'#home').slice(1); if(p==='detective'&&S.step>=3) render(); if(p==='ebook') renderBook(); if(p==='ar') AR_IDS.forEach(drawCity); },160); }).observe(document.body);
 route();
 </script>
+
 <!-- Chatbase assistant (NE-AR) -->
 <script>
 (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="n6bFieyozHLSY4lc7bGQM";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
