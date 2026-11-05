@@ -29,3 +29,12 @@
 
 ## Cómo publicar cambios
 Editar `td/site` (archivo de trabajo), reconstruir `index.html`, conservar el bloque de Chatbase al final y hacer commit y push a `main`. GitHub Pages publica en 1–2 minutos.
+
+## Próximos pasos hacia la competencia (14–15 nov 2026)
+1. Confirmar nombres y roles del equipo para la página About.
+2. Revisión del equipo: datos y estadísticas; textos finales del e-book; enlaces reales del visor AR y de la app (APK).
+3. Decidir Chatbase: plan gratis (50 mensajes al mes) o prueba de 7 días cerca de la fecha.
+4. Revisar los requisitos de entrega de Space Apps 2026 (página del proyecto, demo, uso de IA, datos de NASA usados).
+5. Preparar la demo: video corto y presentación.
+6. Pruebas en varios celulares y navegadores; congelar cambios el 13 nov.
+7. Plan B para el día: copia sin internet del sitio y capturas de pantalla.
