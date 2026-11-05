@@ -23,7 +23,7 @@
    - Mensaje de la vista previa: más suave, invitando a usar el sitio publicado.
 3. ✅ **Corrección de texto (hecho):** "in the Medellín" y frases parecidas en las ciudades en vivo deben quedar sin "the".
 4. **Confirmar con Viviana** dónde aparece el texto de "coverage" que vio, para cambiarlo por "próximamente". Pedirle un pantallazo.
-5. **Chatbase:** en Sources, agregar https://vivivarm.github.io/NEAR/ y quitar el texto viejo de Google Sites si confunde al bot.
+5. ✅ **Chatbase (hecho):** se subió chatbase-knowledge-ne-ar.txt con los 49 resultados reales. Ojo: el plan gratis permite solo 50 mensajes al mes; decidir antes de la competencia si se usa la prueba gratis de 7 días u otra herramienta.
 6. **Mensaje en inglés para el equipo** presentando el sitio y los hallazgos de los datos.
 7. **Proyecciones futuras CMIP6** (NEX-GDDP-CMIP6, SSP2-4.5 y SSP5-8.5) para la máquina del tiempo: paso a paso en Google Colab.
 
