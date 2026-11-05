@@ -410,7 +410,7 @@ img,svg,canvas,video{max-width:100%}
           <button class="btn" id="homeDemo"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Watch a demo case</button>
         </div>
       </div>
-      <div class="globe-wrap" id="globeWrap"><canvas id="globe" aria-label="Rotating globe with three hotspots in India"></canvas><div class="globe-cap">Drag to spin · rings mark every place you can investigate</div></div>
+      <div class="globe-wrap" id="globeWrap"><canvas id="globe" aria-label="Rotating globe with every place you can investigate"></canvas><div class="globe-cap">Drag to spin · tap a coloured ring to open its case · white rings load live NASA data</div></div>
     </section>
     <div class="facts" id="facts"></div>
 
@@ -681,6 +681,7 @@ const REG={
   amazon:{name:'Central Amazon',place:'Amazonas, Brazil',box:'4–2°S · 61–59°W',n:4,land:'Tropical rainforest near Manaus',ll:[-60,-3]},
   andes:{name:'Colombian Andes',place:'Bogotá savanna, Colombia',box:'4.25–5.25°N · 74.5–73.5°W',n:4,land:'High Andean plateau around Bogotá',ll:[-74,4.75]},
   pnw:{name:'Pacific Northwest',place:'Washington, USA',box:'46.5–48.5°N · 124–122°W',n:4,land:'Temperate rainforest coast',ll:[-123,47.5]}};
+const CITIES=[['New York','USA',-74.0,40.7],['Mexico City','Mexico',-99.13,19.43],['Medellín','Colombia',-75.57,6.25],['Lima','Peru',-77.04,-12.05],['São Paulo','Brazil',-46.63,-23.55],['Buenos Aires','Argentina',-58.38,-34.6],['Reykjavík','Iceland',-21.9,64.15],['London','UK',-0.13,51.51],['Paris','France',2.35,48.86],['Moscow','Russia',37.62,55.75],['Cairo','Egypt',31.24,30.04],['Lagos','Nigeria',3.38,6.52],['Nairobi','Kenya',36.82,-1.29],['Cape Town','South Africa',18.42,-33.92],['Dubai','UAE',55.27,25.2],['Beijing','China',116.4,39.9],['Jakarta','Indonesia',106.85,-6.2],['Tokyo','Japan',139.69,35.69],['Sydney','Australia',151.21,-33.87],['Anchorage','Alaska, USA',-149.9,61.22]];
 const PNAME={SNODP:['Snow depth','cm',2,'snow'],T2M:['Air temperature','°C',2,'heat'],T2M_MIN:['Night-time minimum temperature','°C',2,'heat'],PRECTOTCORR:['Rainfall','mm/day',2,'rain'],RH2M:['Relative humidity','%',1,'hum']};
 Object.keys(GLOB).forEach(k=>{ const p=k.split('_').slice(0,-1).join('_'), rid=k.split('_').pop(), [name,unit,dp,kind]=PNAME[p], R=REG[rid];
   META[k]={name:(p==='PRECTOTCORR'&&['sikkim','alps','sierra','rockies'].includes(rid))?'Precipitation (rain + snow)':name,unit,dp,kind,p};
@@ -768,8 +769,9 @@ $('#menuBtn').addEventListener('click',()=>{ const o=$('#navLinks').classList.to
 const globe={active:true,rot:-20,tilt:18,target:-78.5,drag:null,t:0};
 (function initGlobe(){
   const cv=$('#globe'), wrap=$('#globeWrap'); const g=cv.getContext('2d'); const pts=[]; for(let i=0;i<DOTS.length;i+=2) pts.push([DOTS[i]/10*Math.PI/180, DOTS[i+1]/10*Math.PI/180]);
-  const LABEL={himalaya:0,thar:1,sundarbans:2};
-  const hot=Object.entries(REG).filter(([k,r])=>r.ll).map(([k,r])=>({k,lon:r.ll[0]*Math.PI/180,lat:r.ll[1]*Math.PI/180,c:tok(KIND[META[r.main].kind].color),name:r.name,li:LABEL[k]}));
+  const hot=Object.entries(REG).filter(([k,r])=>r.ll&&k!=='custom').map(([k,r])=>({k,lon:r.ll[0]*Math.PI/180,lat:r.ll[1]*Math.PI/180,c:tok(KIND[META[r.main].kind].color),name:r.name,big:true}))
+    .concat(CITIES.map((c,i)=>({city:i,lon:c[2]*Math.PI/180,lat:c[3]*Math.PI/180,c:'#FFFFFF',name:c[0],big:false})));
+  let seen=[]; globe.hover=null;
   function size(){ const s=wrap.clientWidth, d=devicePixelRatio||1; cv.width=s*d; cv.height=s*d; g.setTransform(d,0,0,d,0,0); return s; }
   let S0=size(); new ResizeObserver(()=>{ S0=size(); }).observe(wrap);
   function proj(lon,lat){ const l=lon+globe.rot*Math.PI/180, t=globe.tilt*Math.PI/180; const X=Math.cos(lat)*Math.sin(l), Y=Math.sin(lat), Z=Math.cos(lat)*Math.cos(l); return [X, Y*Math.cos(t)-Z*Math.sin(t), Y*Math.sin(t)+Z*Math.cos(t)]; }
@@ -780,15 +782,30 @@ const globe={active:true,rot:-20,tilt:18,target:-78.5,drag:null,t:0};
     const sea=g.createRadialGradient(cx-R*.35,cy-R*.4,R*.1,cx,cy,R); sea.addColorStop(0,'#0E2A63'); sea.addColorStop(1,'#030915'); g.fillStyle=sea; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill();
     g.strokeStyle='rgba(111,163,255,.45)'; g.lineWidth=1; g.stroke();
     for(const [lon,lat] of pts){ const [x,y,z]=proj(lon,lat); if(z<=0) continue; const a=.25+.75*z; g.fillStyle=`rgba(${Math.round(150+70*z)},${Math.round(200+30*z)},${Math.round(210+20*z)},${a})`; g.beginPath(); g.arc(cx+R*x,cy-R*y,Math.max(.6,1.35*z*s/520),0,7); g.fill(); }
-    hot.forEach((h,i)=>{ const [x,y,z]=proj(h.lon,h.lat); if(z<=.05) return; const px=cx+R*x, py=cy-R*y, ph=((globe.t/1400)+i/5)%1, big=h.li!==undefined;
-      g.strokeStyle=h.c; g.globalAlpha=(1-ph)*z*(big?1:.6); g.lineWidth=big?2:1.4; g.beginPath(); g.arc(px,py,(big?6:4)+ph*(big?22:12),0,7); g.stroke(); g.globalAlpha=1;
-      g.fillStyle=h.c; g.beginPath(); g.arc(px,py,big?4.5:3,0,7); g.fill(); if(!big) return; i=h.li; g.font='600 12px "Inter",system-ui,sans-serif'; g.fillStyle='rgba(232,240,246,'+z+')';
-      const off=[[-10,-14,'right'],[-12,20,'right'],[12,4,'left']][i]; let tx=px+off[0], al=off[2]; const tw=g.measureText(h.name).width, cw=g.canvas.clientWidth||g.canvas.width; if(al==='left'&&tx+tw>cw-6){al='right';tx=px-12;} if(al==='right'&&tx-tw<6){al='left';tx=px+12;} g.textAlign=al; g.fillText(h.name, tx, py+off[1]); });
+    seen=[]; const boxes=[], fs=Math.max(10.5,Math.min(13,s/42));
+    hot.forEach((h,i)=>{ const [x,y,z]=proj(h.lon,h.lat); if(z<=.05) return; const px=cx+R*x, py=cy-R*y, ph=((globe.t/1400)+i/7)%1, big=h.big, hv=globe.hover===h;
+      seen.push({h,px,py,z});
+      g.strokeStyle=h.c; g.globalAlpha=(1-ph)*z*(big?1:.45); g.lineWidth=big?2:1.2; g.beginPath(); g.arc(px,py,(big?5:3.5)+ph*(big?18:10),0,7); g.stroke(); g.globalAlpha=1;
+      if(big){ g.fillStyle=h.c; g.beginPath(); g.arc(px,py,hv?6:4.2,0,7); g.fill(); g.strokeStyle='#05070A'; g.lineWidth=1.5; g.stroke(); }
+      else { g.strokeStyle='rgba(255,255,255,'+(.55+.45*z)+')'; g.lineWidth=1.6; g.beginPath(); g.arc(px,py,hv?5:3.2,0,7); g.stroke(); } });
+    const order=seen.slice().sort((a,b)=>(b.h===globe.hover)-(a.h===globe.hover)||(b.h.big-a.h.big)||(b.z-a.z));
+    g.font=`600 ${fs}px "Inter",system-ui,sans-serif`; g.textBaseline='middle'; const cw=s;
+    for(const o of order){ if(o.z<.3&&o.h!==globe.hover) continue; const small=!o.h.big&&o.h!==globe.hover; if(small&&o.z<.55) continue; g.font=`${small?500:600} ${small?fs-1.5:fs}px "Inter",system-ui,sans-serif`; const tw=g.measureText(o.h.name).width, th=fs+4;
+      const cand=[[o.px+10,o.py,'left'],[o.px-10,o.py,'right'],[o.px,o.py-14,'center'],[o.px,o.py+15,'center']];
+      for(const [tx,ty,al] of cand){ const x0=al==='left'?tx:al==='right'?tx-tw:tx-tw/2, b={x0:x0-3,y0:ty-th/2,x1:x0+tw+3,y1:ty+th/2};
+        if(b.x0<4||b.x1>cw-4) continue; if(boxes.some(q=>!(b.x1<q.x0||b.x0>q.x1||b.y1<q.y0||b.y0>q.y1))) continue;
+        boxes.push(b); g.textAlign=al; g.lineJoin='round'; g.miterLimit=2; g.lineWidth=3.5; g.strokeStyle='rgba(5,7,10,.85)'; g.strokeText(o.h.name,tx,ty); g.fillStyle=o.h===globe.hover?'#FFFFFF':small?'rgba(190,200,215,'+Math.min(.85,o.z)+')':'rgba(232,240,246,'+Math.min(1,.35+o.z)+')'; g.fillText(o.h.name,tx,ty); break; } }
+    g.textBaseline='alphabetic';
   }
+  function hit(e){ const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; let best=null, bd=e.pointerType==='touch'?22:14; for(const o of seen){ const d=Math.hypot(o.px-x,o.py-y); if(d<bd){bd=d;best=o.h;} } return best; }
+  function openPlace(h){ if(h.city!==undefined){ const c=CITIES[h.city]; Object.assign(S,{v:'heat',l:null,key:null,step:2,max:2,tested:false,result:null}); location.hash='#detective'; setTimeout(()=>livePoint(c[2],c[3],[c[0],c[1]],true),400); return; }
+    const v=VARS.find(x=>x.locs.includes(h.k))||VARS.find(x=>x.kind===META[REG[h.k].main].kind); Object.assign(S,{v:v.id,l:h.k,key:REG[h.k].main,max:3,step:3,tested:false,result:null}); location.hash='#detective'; }
   requestAnimationFrame(frame);
-  wrap.addEventListener('pointerdown',e=>{ globe.drag={x:e.clientX,rot:globe.rot}; wrap.setPointerCapture(e.pointerId); });
-  wrap.addEventListener('pointermove',e=>{ if(!globe.drag) return; globe.rot=globe.drag.rot+(e.clientX-globe.drag.x)*.35; globe.target=globe.rot; });
-  wrap.addEventListener('pointerup',()=>{ globe.drag=null; setTimeout(()=>{ if(!globe.drag) globe.target=-78.5; },2500); });
+  wrap.addEventListener('pointerdown',e=>{ globe.drag={x:e.clientX,y:e.clientY,rot:globe.rot,moved:false,h:hit(e)}; wrap.setPointerCapture(e.pointerId); });
+  wrap.addEventListener('pointermove',e=>{ if(!globe.drag){ const h=hit(e); globe.hover=h; wrap.style.cursor=h?'pointer':''; wrap.title=h?(h.big?`${h.name}: open this case`:`${h.name}: load live NASA data`):''; return; }
+    if(Math.abs(e.clientX-globe.drag.x)+Math.abs(e.clientY-globe.drag.y)>6) globe.drag.moved=true; if(globe.drag.moved){ globe.rot=globe.drag.rot+(e.clientX-globe.drag.x)*.35; globe.target=globe.rot; } });
+  wrap.addEventListener('pointerup',e=>{ const d=globe.drag; globe.drag=null; if(d&&!d.moved){ const h=hit(e)||d.h; if(h) openPlace(h); } });
+  wrap.addEventListener('pointerleave',()=>{ if(!globe.drag){ globe.hover=null; wrap.style.cursor=''; } });
 })();
 
 /* ---------- home ---------- */
@@ -836,18 +853,18 @@ function renderMap(){ const v=VV(), c=tok(KIND[v.kind].color), mine=locsOf(v), W
   $('#map').innerHTML=`<div class="scroll-x"><svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="World map with the places you can investigate">
     <rect width="${W}" height="${H}" fill="#070B12" rx="10"/>
     <g stroke="${tok('--grid')}" stroke-width="1">${[-60,-30,0,30,60].map(l=>`<line x1="0" x2="${W}" y1="${wy(l)}" y2="${wy(l)}"/>`).join('')}${[-150,-120,-90,-60,-30,0,30,60,90,120,150].map(l=>`<line y1="0" y2="${H}" x1="${wx(l)}" x2="${wx(l)}"/>`).join('')}</g>
-    <path d="${WORLD.land}" fill="#18202C" stroke="#33405A" stroke-width=".8"/>${others}${marks}</svg></div>
-    <p class="small muted" id="mapMsg" style="margin-top:10px">Tap a coloured dot to choose a place. Or tap anywhere else on the map to fetch live NASA data for that exact point.</p>`;
-  $('#map svg').addEventListener('click',e=>{ const mk=e.target.closest('[data-mk]'); if(mk){ pickLoc(mk.dataset.mk); return; } const svg=e.currentTarget, rr=svg.getBoundingClientRect(), x=(e.clientX-rr.left)*W/rr.width, y=(e.clientY-rr.top)*H/rr.height; livePoint(x/WORLD.k-180, 85-y/WORLD.k); }); }
+    <path d="${WORLD.land}" fill="#18202C" stroke="#33405A" stroke-width=".8"/>${others}${CITIES.map((c,i)=>`<g class="mk" data-city="${i}"><title>${c[0]}, ${c[1]} · live NASA data</title><circle cx="${wx(c[2])}" cy="${wy(c[3])}" r="9" fill="transparent"/><circle cx="${wx(c[2])}" cy="${wy(c[3])}" r="4" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/></g>`).join('')}${marks}</svg></div>
+    <p class="small muted" id="mapMsg" style="margin-top:10px">Tap a coloured dot to choose a place. White rings are famous cities with live NASA data, and you can tap anywhere else on Earth to fetch live data for that exact point.</p>`;
+  $('#map svg').addEventListener('click',e=>{ const ci=e.target.closest('[data-city]'); if(ci){ const c=CITIES[+ci.dataset.city]; livePoint(c[2],c[3],[c[0],c[1]]); return; } const mk=e.target.closest('[data-mk]'); if(mk){ pickLoc(mk.dataset.mk); return; } const svg=e.currentTarget, rr=svg.getBoundingClientRect(), x=(e.clientX-rr.left)*W/rr.width, y=(e.clientY-rr.top)*H/rr.height; livePoint(x/WORLD.k-180, 85-y/WORLD.k); }); }
 const LIVE_P={snow:['SNODP','T2M','PRECTOTCORR'],heat:['T2M','T2M_MIN','RH2M'],rain:['PRECTOTCORR','T2M','RH2M']};
-async function livePoint(lon,lat){ const v=VV(), la=+lat.toFixed(2), lo=+lon.toFixed(2), ps=LIVE_P[v.kind]; $('#mapMsg').textContent=`Asking NASA POWER for ${fmtLL(la,lo)}…`;
+async function livePoint(lon,lat,label,autoGo){ const v=VV(), la=+lat.toFixed(2), lo=+lon.toFixed(2), ps=LIVE_P[v.kind]; const mm0=$('#mapMsg'); if(mm0) mm0.textContent=`Asking NASA POWER for ${label?label[0]:fmtLL(la,lo)}…`; else toast(`Asking NASA POWER for ${label?label[0]:fmtLL(la,lo)}…`);
   try{ const res=await fetch(`https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${ps.join(',')}&community=AG&latitude=${la}&longitude=${lo}&start=1981&end=2025&format=JSON`); if(!res.ok) throw new Error('HTTP '+res.status);
     const P=(await res.json()).properties.parameter; Object.keys(META).filter(k=>k.endsWith('_custom')).forEach(k=>{ delete META[k]; delete SER[k]; delete SCAN[k]; }); const keys=[]; const flat=[];
     for(const p of ps){ const arr=[]; let bad=false; for(let y=Y0;y<=Y1;y++) for(let m=1;m<=12;m++){ const x=P[p][`${y}${String(m).padStart(2,'0')}`]; if(x==null||x===-999) bad=true; arr.push(x); } if(bad) continue;
       const [name,unit,dp,kind]=PNAME[p]; if(Math.max(...arr)-Math.min(...arr)<1e-6){ flat.push(name.toLowerCase()); continue; } const k=`${p}_custom`; SER[k]=arr; META[k]={name,unit,dp,kind,p,region:'custom',source:`NASA POWER ${p} (MERRA-2 reanalysis), live`}; SCAN[k]=mannKendall(seasonal(arr,'all',Y0,Y1)); keys.push(k); }
     if(!keys.length) throw new Error('no data');
-    REG.custom={name:'Your point',place:fmtLL(la,lo),box:fmtLL(la,lo),n:1,land:'Chosen by you on the map, live from NASA',ll:[lo,la],keys,main:keys[0],kind:v.kind};
-    pickLoc('custom'); if(flat.length){ const msg=`No ${flat.join(' or ')} at this point in 1981–2025, so there is no trend to test for it. The other clues for this point are ready.`; toast(msg); const mm=$('#mapMsg'); if(mm) mm.innerHTML=`<b style="color:var(--warn)">${msg}</b>`; } else toast('Live NASA data loaded for your point');
+    REG.custom={name:label?label[0]:'Your point',place:label?`${label[0]}, ${label[1]}`:fmtLL(la,lo),box:fmtLL(la,lo),n:1,land:label?`Live NASA data for ${label[0]} (${fmtLL(la,lo)})`:'Chosen by you on the map, live from NASA',ll:[lo,la],keys,main:keys[0],kind:v.kind};
+    pickLoc('custom'); if(flat.length){ const msg=`No ${flat.join(' or ')} at this point in 1981–2025, so there is no trend to test for it. The other clues for this point are ready.`; toast(msg); const mm=$('#mapMsg'); if(mm) mm.innerHTML=`<b style="color:var(--warn)">${msg}</b>`; } else toast(label?`Live NASA data loaded for ${label[0]}`:'Live NASA data loaded for your point'); if(autoGo&&!flat.length) go(3);
   }catch(err){ if(/github\.io$/.test(location.hostname)||location.protocol==='https:'&&!/claude/.test(location.hostname)){ $('#mapMsg').innerHTML=err.message==='no data'?`<b style="color:var(--warn)">NASA has no usable data for this variable at that point.</b> Try a point on land, or choose one of the coloured dots.`:`<b style="color:var(--warn)">NASA POWER did not answer.</b> Please try again in a moment, or choose one of the coloured dots.`; return; } $('#mapMsg').innerHTML=`<b style="color:var(--warn)">This preview can’t reach NASA directly.</b> On the published site, tapping the map fetches live NASA POWER data for any point on Earth. For now, choose one of the coloured dots.`; } }
 function renderMapIndia(){ const v=VV(), M0=REGION_MAP, sel=v.locs[0];
   const boxes=Object.entries(M0.boxes).map(([k,[x,y,w,h]])=>{ const on=k===sel, c=tok(KIND[META[REG[k].main].kind].color); return `<g opacity="${on?1:.35}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity="${on?.18:.08}" stroke="${c}" stroke-width="${on?2:1}" rx="2"/>${M0.pts[k].map(([px,py])=>`<circle cx="${px}" cy="${py}" r="${on?3.2:2}" fill="${c}"/>`).join('')}
